@@ -1,0 +1,1667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flashcard Fireworks</title>
+<meta name="description" content="Daily flashcard practice for young readers, with streaks, stars and fireworks. Everything stays on your device.">
+<meta name="theme-color" content="#ECF0F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10171F" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Flashcards">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+@font-face{font-family:"Andika";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/andika-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Andika";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/andika-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Lexend";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/lexend-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Lexend";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/lexend-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Lexend";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/lexend-latin-600-normal.woff2) format("woff2")}
+:root{
+  /* Layout: one 640px column with sticky tabs; the ruled index card in practice mode is the single bold element */
+  --desk:#ECF0F4; --surface:#FFFFFF; --ink:#1B2836; --muted:#5A6878; --line:#D4DCE5;
+  --accent:#2B5CA6; --accent-ink:#FFFFFF; --accent-soft:#E2EAF6;
+  --easy:#2B8151; --easy-soft:#E0F1E6; --effort:#8F5C08; --effort-soft:#FAEED3; --hard:#BB3D44; --hard-soft:#F7E0E1; --on-sem:#FFFFFF;
+  --lv0:#B9C4D0; --lv1:#9DBBE6; --lv2:#5D8BD0; --lv3:#2B5CA6; --lv4:#2B8151;
+  --card:#FFFFFF; --card-ink:#1B2836; --card-rule:#B3CBE7; --card-margin:#DE7070;
+  --flame:#F2701D; --flame-soft:#FFEBDC; --star:#E8A400; --idle:#B6C0CB;
+  --f-word:"Andika", "Trebuchet MS", system-ui, sans-serif;
+  --f-ui:"Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --desk:#10171F; --surface:#18222D; --ink:#E3EAF2; --muted:#93A1B1; --line:#2A3746;
+    --accent:#88AFEE; --accent-ink:#0D1520; --accent-soft:#1D2D44;
+    --easy:#5DC28B; --easy-soft:#15301F; --effort:#E4AE4B; --effort-soft:#33280E; --hard:#EF7D83; --hard-soft:#3A1D21; --on-sem:#0D1520;
+    --lv0:#3A4756; --lv1:#355583; --lv2:#4C79BF; --lv3:#88AFEE; --lv4:#5DC28B;
+    --card:#ECE7DC; --card-ink:#1B2836; --card-rule:#9CB5D5; --card-margin:#CF6767;
+    --flame:#FF8A3D; --flame-soft:#3A2414; --star:#FFC23D; --idle:#4A5868;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --desk:#10171F; --surface:#18222D; --ink:#E3EAF2; --muted:#93A1B1; --line:#2A3746;
+  --accent:#88AFEE; --accent-ink:#0D1520; --accent-soft:#1D2D44;
+  --easy:#5DC28B; --easy-soft:#15301F; --effort:#E4AE4B; --effort-soft:#33280E; --hard:#EF7D83; --hard-soft:#3A1D21; --on-sem:#0D1520;
+  --lv0:#3A4756; --lv1:#355583; --lv2:#4C79BF; --lv3:#88AFEE; --lv4:#5DC28B;
+  --card:#ECE7DC; --card-ink:#1B2836; --card-rule:#9CB5D5; --card-margin:#CF6767;
+  --flame:#FF8A3D; --flame-soft:#3A2414; --star:#FFC23D; --idle:#4A5868;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--desk);color:var(--ink);font-family:var(--f-ui);font-size:16px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{position:sticky;top:0;z-index:5;background:var(--desk);border-bottom:1px solid var(--line)}
+.brandrow{display:flex;align-items:center;gap:10px;padding:12px 0 4px}
+.brand-mark{width:30px;height:21px;flex:none;transform:rotate(-4deg)}
+h1{font-family:var(--f-word);font-weight:700;font-size:23px;line-height:1.1;margin:0}
+.for{color:var(--muted);font-size:13px;margin:0}
+nav.tabs{display:flex}
+nav.tabs a{flex:1;text-align:center;padding:10px 2px 9px;color:var(--muted);text-decoration:none;font-weight:500;font-size:15px;border-bottom:3px solid transparent}
+nav.tabs a[aria-current="page"]{color:var(--ink);border-bottom-color:var(--accent)}
+nav.tabs a:focus-visible{outline-offset:-3px;border-radius:6px}
+
+main{padding:18px 0 56px}
+section[hidden]{display:none}
+h2{font-size:20px;font-weight:600;margin:0 0 2px;text-wrap:balance}
+h3{font-size:15px;font-weight:600;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 14px;font-size:14px}
+.hint{color:var(--muted);font-size:13px;margin:10px 0 0}
+.stack-v{display:flex;flex-direction:column;gap:14px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;font-weight:500;min-height:44px;text-align:center}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.block{display:flex;width:100%}
+.btn.small{min-height:36px;padding:6px 12px;font-size:14px}
+.btn.danger{color:var(--hard);border-color:var(--hard)}
+.btn:disabled{opacity:.45;cursor:default}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+.btnrow .btn{flex:1 1 140px}
+body.ro [data-write]{display:none !important}
+
+.banner{margin:14px 0 0;padding:10px 14px;border-radius:10px;font-size:14px;background:var(--effort-soft);border:1px solid var(--effort)}
+.banner:empty{display:none}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.stat b{display:block;font-size:26px;line-height:1.15;font-weight:600;font-variant-numeric:tabular-nums}
+.stat span{display:block;font-size:12.5px;color:var(--muted);line-height:1.3}
+
+.progress{display:flex;flex-direction:column;gap:6px}
+.ptext{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+.ptext b{color:var(--ink);font-variant-numeric:tabular-nums}
+.meter{height:10px;background:var(--line);border-radius:99px;overflow:hidden;display:flex}
+.meter i{display:block;height:100%}
+.m3{background:var(--easy)} .m2{background:var(--effort)} .m1{background:var(--hard)}
+
+.rows{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:10px;padding:8px 8px 8px 12px}
+.row.s3{border-left-color:var(--easy)} .row.s2{border-left-color:var(--effort)} .row.s1{border-left-color:var(--hard)}
+.w{font-family:var(--f-word);font-size:25px;line-height:1.15;overflow-wrap:anywhere}
+.meta{font-size:12px;color:var(--muted);line-height:1.3}
+.grow{flex:1;min-width:0}
+.score{display:flex;gap:4px;flex:none}
+.score button{border:1px solid var(--line);background:transparent;border-radius:8px;min-width:46px;min-height:42px;padding:0 7px;font-size:13px;font-weight:500;color:var(--muted)}
+.score [data-s="3"][aria-pressed="true"],.bigscore [data-s="3"][aria-pressed="true"]{background:var(--easy);border-color:var(--easy);color:var(--on-sem)}
+.score [data-s="2"][aria-pressed="true"],.bigscore [data-s="2"][aria-pressed="true"]{background:var(--effort);border-color:var(--effort);color:var(--on-sem)}
+.score [data-s="1"][aria-pressed="true"],.bigscore [data-s="1"][aria-pressed="true"]{background:var(--hard);border-color:var(--hard);color:var(--on-sem)}
+
+.callout{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:14px}
+.callout p{margin:0;flex:1 1 220px}
+.done{display:flex;flex-direction:column;gap:10px}
+.done .big{font-family:var(--f-word);font-size:26px;font-weight:700;margin:0}
+.tally{display:flex;gap:8px;flex-wrap:wrap}
+.tally span{font-size:14px;padding:4px 10px;border-radius:99px}
+.t3{background:var(--easy-soft);color:var(--easy)} .t2{background:var(--effort-soft);color:var(--effort)} .t1{background:var(--hard-soft);color:var(--hard)}
+
+.empty{text-align:center;padding:26px 18px}
+.empty .w{font-size:30px;margin:0 0 6px}
+.empty p{color:var(--muted);margin:0 auto 16px;max-width:42ch}
+
+/* Words */
+.search{width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:6px 12px;font-size:14px;min-height:36px}
+.chip b{font-weight:600;font-variant-numeric:tabular-nums;margin-left:4px}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--desk)}
+.wrow{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+.wmain{display:flex;align-items:center;gap:12px;width:100%;background:transparent;border:0;padding:8px 12px;text-align:left;min-height:52px;border-radius:10px}
+.pips{display:inline-flex;gap:3px;flex:none}
+.pips i{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.pips i.on{background:var(--lv3)}
+.pips.m i.on{background:var(--lv4)}
+.wdetail{border-top:1px solid var(--line);padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.wdetail p{margin:0;color:var(--muted)}
+.hist{display:flex;gap:3px;flex-wrap:wrap}
+.hist i{width:12px;height:12px;border-radius:3px}
+.h3{background:var(--easy)} .h2{background:var(--effort)} .h1{background:var(--hard)}
+.inline-edit{display:flex;gap:6px}
+.inline-edit input{flex:1;min-width:0;min-height:40px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-family:var(--f-word);font-size:20px;background:var(--surface)}
+
+/* Add */
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:8px 14px;min-height:44px;font-weight:500;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+label.lbl{display:block;font-size:13px;color:var(--muted);margin:0 0 6px}
+.field{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+input[type="date"],input[type="text"].plain{min-height:44px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--surface)}
+textarea{width:100%;min-height:130px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--surface);font-family:var(--f-word);font-size:21px;line-height:1.35;resize:vertical}
+.photo{display:flex;flex-direction:column;gap:8px}
+.photo-btns{display:flex;gap:8px;flex-wrap:wrap}
+.filebtn{position:relative;overflow:hidden;flex:1 1 150px;cursor:pointer}
+.filebtn svg{width:18px;height:18px;flex:none}
+.filebtn input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:100px}
+.filebtn:focus-within{outline:2px solid var(--accent);outline-offset:2px}
+.filebtn.busy{opacity:.5;pointer-events:none}
+.photo-msg{font-size:14px;color:var(--muted);margin:0}
+.panel.dropping{outline:2px dashed var(--accent);outline-offset:-6px;background:var(--accent-soft)}
+.pvhead{font-size:14px;color:var(--muted);margin:0 0 8px}
+.pvhead b{color:var(--ink)}
+.pv{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-family:var(--f-word);font-size:19px;line-height:1.2;padding:5px 10px;border-radius:8px;border:1px solid var(--line);background:var(--surface)}
+.tag small{display:block;font-family:var(--f-ui);font-size:11px;color:var(--muted)}
+.tag.new{border-color:var(--easy);background:var(--easy-soft)}
+.tag.have{border-color:var(--effort);background:var(--effort-soft)}
+.tag.repeat{color:var(--muted);text-decoration:line-through}
+.result{font-size:14px;border-radius:10px;padding:10px 12px;background:var(--easy-soft)}
+.result:empty{display:none}
+
+/* Progress */
+.levelbar{display:flex;height:18px;border-radius:6px;overflow:hidden;background:var(--line)}
+.levelbar i{display:block;height:100%}
+.legend{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px 12px;margin-top:10px;font-size:14px}
+.legend span{display:flex;align-items:center;gap:8px}
+.legend i{width:12px;height:12px;border-radius:3px;flex:none}
+.legend b{margin-left:auto;font-variant-numeric:tabular-nums}
+.days{display:grid;grid-template-columns:repeat(14,1fr);gap:4px}
+.day{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.day i{width:100%;aspect-ratio:1;max-width:22px;border-radius:5px;background:var(--line)}
+.day.on i{background:var(--easy)}
+.day.today span{color:var(--ink);font-weight:600}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.stepper button{border:0;background:transparent;min-width:44px;min-height:44px;font-size:20px}
+.stepper output{min-width:34px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.setrow:first-of-type{border-top:0}
+.setrow p{margin:0;font-size:14px}
+.setrow small{display:block;color:var(--muted);font-size:12.5px}
+ul.how{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:6px}
+
+/* Practice card mode */
+#cardMode{position:fixed;inset:0;z-index:20;background:var(--desk);display:flex;flex-direction:column;overflow:auto}
+#cardMode[hidden]{display:none}
+.cm-top{display:flex;align-items:center;gap:12px;padding:12px 16px;max-width:640px;width:100%;margin:0 auto}
+.cm-top .grow{display:flex;flex-direction:column;gap:5px}
+.cm-count{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.iconbtn{border:1px solid var(--line);background:var(--surface);border-radius:10px;min-width:44px;min-height:44px;display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+.cm-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:8px 16px 28px;max-width:640px;width:100%;margin:0 auto}
+.icard{position:relative;width:100%;max-width:560px;aspect-ratio:5/3;background:var(--card);color:var(--card-ink);border-radius:5px;box-shadow:0 1px 1px rgba(16,32,56,.08),0 16px 34px -16px rgba(16,32,56,.5);overflow:hidden;display:flex;align-items:center;justify-content:center;transform:rotate(-.6deg)}
+.icard::before{content:"";position:absolute;left:0;right:0;top:22%;height:2px;background:var(--card-margin)}
+.icard::after{content:"";position:absolute;left:0;right:0;top:calc(22% + 2px);bottom:0;background:repeating-linear-gradient(to bottom,transparent 0 27px,var(--card-rule) 27px 28px)}
+.icard .word{position:relative;z-index:1;font-family:var(--f-word);font-weight:400;line-height:1;white-space:nowrap;padding:6% 4% 0;font-size:72px}
+.icard.deal{animation:deal .3s cubic-bezier(.2,.8,.25,1)}
+@keyframes deal{from{transform:translate(18px,10px) rotate(2deg);opacity:0}to{transform:rotate(-.6deg);opacity:1}}
+@media (prefers-reduced-motion: reduce){.icard.deal{animation:none}}
+.cm-level{font-size:13px;color:var(--muted);margin:0}
+.bigscore{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;max-width:560px}
+.bigscore button{min-height:76px;border-radius:12px;border:2px solid;font-weight:600;font-size:16px;line-height:1.2;padding:6px}
+.bigscore [data-s="3"]{border-color:var(--easy);color:var(--easy);background:var(--easy-soft)}
+.bigscore [data-s="2"]{border-color:var(--effort);color:var(--effort);background:var(--effort-soft)}
+.bigscore [data-s="1"]{border-color:var(--hard);color:var(--hard);background:var(--hard-soft)}
+.cm-nav{display:flex;gap:8px;width:100%;max-width:560px}
+.cm-nav .btn{flex:1}
+
+/* Flashcard Fireworks additions */
+h1{font-size:21px}
+a.btn{text-decoration:none;color:var(--ink)}
+a.btn.primary{color:var(--accent-ink)}
+.welcome{display:flex;flex-direction:column;gap:12px}
+.welcome .big{font-family:var(--f-word);font-size:26px;font-weight:700;margin:0;line-height:1.2}
+.welcome p{margin:0}
+.welcome input{max-width:260px}
+.clists{display:flex;flex-direction:column;gap:6px}
+.clist{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer}
+.clist input{width:22px;height:22px;flex:none;accent-color:var(--accent)}
+.clist b{display:block;font-weight:600}
+.clist small{display:block;color:var(--muted);font-size:13px}
+.clist:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.confirm{margin-top:10px;padding:12px;border-radius:10px;background:var(--effort-soft);border:1px solid var(--effort);font-size:14px;display:flex;flex-direction:column;gap:10px}
+.confirm p{margin:0}
+.about{font-size:13px;color:var(--muted);text-align:center;margin:18px 0 0}
+
+/* Game layer */
+.ico{width:1em;height:1em;flex:none;fill:currentColor}
+.pills{margin-left:auto;display:flex;gap:6px;flex:none}
+.brandrow > div{min-width:0}
+.for{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.star-pill{display:inline-flex;align-items:center;gap:4px;padding:6px 11px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--ink);text-decoration:none;font-weight:600;font-size:17px;font-variant-numeric:tabular-nums}
+.star-pill .ico{font-size:19px;color:var(--star)}
+.streak-pill{display:inline-flex;align-items:center;gap:4px;padding:6px 12px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--idle);text-decoration:none;font-weight:600;font-size:17px;font-variant-numeric:tabular-nums}
+.streak-pill.lit{color:var(--flame);background:var(--flame-soft);border-color:transparent}
+.streak-pill .ico{font-size:20px}
+.streakcard{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.streakcard .flamebig{font-size:42px;color:var(--idle);display:flex}
+.streakcard.lit .flamebig{color:var(--flame)}
+.streakcard.lit .flamebig .ico{animation:flicker 2.4s ease-in-out infinite;transform-origin:50% 90%}
+@keyframes flicker{0%,100%{transform:scale(1) rotate(0)}30%{transform:scale(1.06,.97) rotate(-2deg)}60%{transform:scale(.97,1.05) rotate(2deg)}}
+.sc-num{display:block;font-size:20px;font-weight:600;line-height:1.2}
+.sc-msg{display:block;font-size:13px;color:var(--muted)}
+.week{grid-column:1 / -1;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px}
+.wd{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;color:var(--muted)}
+.wd .dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--desk);color:var(--idle);font-size:16px}
+.wd.on .dot{background:var(--flame-soft);color:var(--flame)}
+.wd.today small{color:var(--ink);font-weight:600}
+.starline{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:17px;color:var(--ink)}
+.starline .ico{color:var(--star);font-size:22px}
+.cm-stars{display:inline-flex;align-items:center;gap:4px;font-weight:600;font-variant-numeric:tabular-nums;padding:6px 10px;border-radius:99px;background:var(--surface);border:1px solid var(--line)}
+.cm-stars .ico{color:var(--star);font-size:18px}
+.cm-stars.bump{animation:bump .45s ease}
+@keyframes bump{40%{transform:scale(1.25)}}
+.cardwrap{position:relative;width:100%;max-width:560px}
+.fb{position:absolute;left:50%;bottom:-18px;transform:translate(-50%,0);z-index:3;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 18px;border-radius:16px;font-weight:600;font-size:18px;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(0,0,0,.35);opacity:0;pointer-events:none}
+.fb small{font-size:13px;font-weight:500}
+.fb.s3{background:var(--easy);color:var(--on-sem)} .fb.s2{background:var(--effort);color:var(--on-sem)} .fb.s1{background:var(--surface);color:var(--ink);border:2px solid var(--line)}
+.fb.show{animation:fbpop .38s cubic-bezier(.2,1.4,.4,1) forwards}
+@keyframes fbpop{from{opacity:0;transform:translate(-50%,12px) scale(.7)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
+.celebrate{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:22px 18px}
+.celebrate .flamebig{font-size:64px;color:var(--flame);display:flex}
+.celebrate .flamebig .ico{animation:flicker 2.4s ease-in-out infinite;transform-origin:50% 90%}
+.celebrate .big{font-size:30px}
+.celebrate .streakline{font-size:18px;font-weight:600;color:var(--flame)}
+.celebrate .milestone{font-size:14px;color:var(--muted);margin:0}
+.switch{width:52px;height:30px;border-radius:99px;border:0;background:var(--line);position:relative;flex:none}
+.switch span{position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,.25);transition:left .15s}
+.switch[aria-pressed="true"]{background:var(--easy)}
+.switch[aria-pressed="true"] span{left:25px}
+.starcard{display:flex;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.starcard .starbig{font-size:40px;color:var(--star);display:flex}
+.starmeter{margin-top:8px;height:10px}
+.starmeter i{background:var(--star);border-radius:99px}
+.msover{position:fixed;inset:0;z-index:55;background:rgba(10,18,30,.55);display:flex;align-items:center;justify-content:center;padding:20px}
+.msover[hidden]{display:none}
+.msbox{background:var(--surface);border-radius:20px;padding:26px 22px;max-width:360px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 20px 50px -10px rgba(0,0,0,.5)}
+.msstar{font-size:84px;color:var(--star);display:flex;animation:msspin 1.2s cubic-bezier(.2,1.3,.4,1)}
+@keyframes msspin{from{transform:scale(.2) rotate(-180deg);opacity:0}to{transform:scale(1) rotate(0);opacity:1}}
+.msstar.flame{color:var(--flame)}
+.msstar.again{animation:none}
+.msnum{font-family:var(--f-word);font-size:38px;font-weight:700;margin:0;line-height:1.1}
+.msbox p{margin:0}
+@media (prefers-reduced-motion: reduce){.msstar{animation:none}}
+canvas.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60}
+@media (prefers-reduced-motion: reduce){.streakcard.lit .flamebig .ico,.celebrate .flamebig .ico,.cm-stars.bump{animation:none}.fb.show{animation:none;opacity:1}}
+
+#toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;max-width:min(92vw,480px);background:var(--ink);color:var(--desk);padding:10px 16px;border-radius:10px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+#toast[hidden]{display:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (max-width:400px){
+  .score button{min-width:42px;padding:0 5px;font-size:12px}
+  .w{font-size:22px}
+  .stat b{font-size:22px}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brandrow">
+      <svg class="brand-mark" viewBox="0 0 34 26" aria-hidden="true" style="width:34px;height:26px"><rect x=".5" y="5.5" width="27" height="19" rx="2" fill="var(--card)" stroke="var(--line)"/><path d="M1 10h26" stroke="var(--card-margin)" stroke-width="1.2"/><path d="M1 14.5h26M1 18.5h26M1 22.5h26" stroke="var(--card-rule)" stroke-width=".9"/><g stroke-width="1.8" stroke-linecap="round"><path d="M29 7.5l3.5-3" stroke="#FF5A5F"/><path d="M29.5 1.5v3" stroke="#FFB400"/><path d="M25 2.5l1.5 2.5" stroke="#4C8BF5"/><path d="M33 9.5h-2.5" stroke="#20C997"/></g></svg>
+      <div><h1>Flashcard Fireworks</h1><p class="for" id="forName">Daily word practice</p></div>
+      <div class="pills"><a class="star-pill" id="starPill" href="#progress" aria-label="Stars earned"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b id="starNum">0</b></a>
+<a class="streak-pill" id="streakPill" href="#progress" aria-label="Practice streak"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.3 1.6c.5 3.1-1.1 5-2.8 6.9C7.7 10.5 5.6 12.8 5.6 16c0 3.6 2.9 6.4 6.4 6.4s6.4-2.8 6.4-6.4c0-2.7-1.3-4.7-2.7-6.2-.2 1.7-1.1 2.9-2.3 3.4.7-4.3-.4-8.7-1.1-11.6z"/><path fill="#fff" fill-opacity=".5" d="M12 13.6c-1 1.3-2.5 2.4-2.5 4.4 0 1.5 1.1 2.6 2.5 2.6s2.5-1.1 2.5-2.6c0-1.9-1.4-3-2.5-4.4z"/></svg><b id="streakNum">0</b></a></div>
+    </div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#today" id="tab-today">Today</a>
+      <a href="#words" id="tab-words">Words</a>
+      <a href="#add" id="tab-add" data-write>Add</a>
+      <a href="#progress" id="tab-progress">Progress</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap"><div class="banner" id="banner" role="status"></div></div>
+
+<main class="wrap">
+  <section id="v-today" aria-labelledby="todayTitle">
+    <h2 id="todayTitle">Today</h2>
+    <p class="sub" id="todaySub">Loading the word list…</p>
+    <div id="todayBody" class="stack-v"></div>
+  </section>
+
+  <section id="v-words" hidden aria-labelledby="wordsTitle">
+    <h2 id="wordsTitle">All words</h2>
+    <p class="sub" id="wordsSub">Every word in the stack, with how well each one is known.</p>
+    <div class="stack-v">
+      <label class="sr" for="wordSearch">Find a word</label>
+      <input id="wordSearch" class="search" type="search" placeholder="Find a word" autocomplete="off" autocapitalize="none" spellcheck="false">
+      <div class="chips" id="wordChips"></div>
+      <div id="wordsCallout"></div>
+      <ul class="rows" id="wordsList"></ul>
+    </div>
+  </section>
+
+  <section id="v-add" hidden aria-labelledby="addTitle">
+    <h2 id="addTitle">Add words</h2>
+    <p class="sub">Add the class word lists, or type your own. Words already in the stack are flagged and skipped.</p>
+    <div class="stack-v">
+      <div class="panel stack-v" id="classPanel">
+        <div><h3 style="margin:0">Class word lists</h3><p class="hint" style="margin:4px 0 0">Trick Words and Heart Words from the 2nd grade newsletters. Tick the lists you want.</p></div>
+        <div class="clists" id="classLists"></div>
+        <button class="btn primary block" id="classAddBtn" data-act="addClass" disabled>Tick a list to add it</button>
+        <div class="result" id="classResult" role="status"></div>
+      </div>
+      <h3 style="margin:8px 0 -4px">Or type your own words</h3>
+      <div class="panel stack-v">
+        <div>
+          <label class="lbl" for="addText">Words, separated by spaces, commas or new lines</label>
+          <textarea id="addText" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="because, could, every, friend"></textarea>
+        </div>
+      </div>
+      <div id="preview" aria-live="polite"></div>
+      <button class="btn primary block" id="addBtn" data-act="add" disabled>Add words</button>
+      <div class="result" id="addResult" role="status"></div>
+    </div>
+  </section>
+
+  <section id="v-progress" hidden aria-labelledby="progTitle">
+    <h2 id="progTitle">Progress</h2>
+    <p class="sub">How the stack is moving toward mastered.</p>
+    <div class="stack-v" id="progressBody"></div>
+    <div class="stack-v" style="margin-top:14px">
+      <div class="panel">
+        <h3>Settings</h3>
+        <div class="setrow">
+          <p><label for="childName">Child's name</label><small>Shown at the top of the page</small></p>
+          <input type="text" class="plain" id="childName" autocomplete="off" style="max-width:160px" data-write>
+        </div>
+        <div class="setrow">
+          <p>Words per day<small>Length of each daily list</small></p>
+          <span class="stepper" data-write><button type="button" data-act="step" data-key="listSize" data-d="-1" aria-label="Fewer words per day">&minus;</button><output id="outListSize">15</output><button type="button" data-act="step" data-key="listSize" data-d="1" aria-label="More words per day">+</button></span>
+        </div>
+        <div class="setrow">
+          <p>Sounds<small>The same ding for every word scored, on this device only</small></p>
+          <button type="button" class="switch" id="soundToggle" data-act="sound" aria-pressed="true" aria-label="Sounds"><span></span></button>
+        </div>
+        <div class="setrow">
+          <p>New words per day<small>Untried words mixed into each list</small></p>
+          <span class="stepper" data-write><button type="button" data-act="step" data-key="newPerDay" data-d="-1" aria-label="Fewer new words per day">&minus;</button><output id="outNewPerDay">5</output><button type="button" data-act="step" data-key="newPerDay" data-d="1" aria-label="More new words per day">+</button></span>
+        </div>
+      </div>
+      <div class="panel">
+        <h3>How the schedule works</h3>
+        <ul class="how">
+          <li><b>Very difficult:</b> the word comes back tomorrow.</li>
+          <li><b>Some effort:</b> the word stays at its level, so a daily word stays daily.</li>
+          <li><b>Easily:</b> the word moves up a level and the gap grows: 2 days, 4 days, a week, 2 weeks, then a monthly check once mastered.</li>
+          <li>The first time a new word comes up sets its starting point. Read easily, it skips ahead to every 4 days.</li>
+          <li>Each list opens and closes with a well-known word, with easier words spread between the tricky ones.</li>
+          <li><b>Stars:</b> every word scored earns stars (3 easily, 2 with effort, 1 very difficult), so trying always counts.</li>
+          <li><b>Streak:</b> any day with at least one scored word keeps the streak going.</li>
+          <li><b>Star total:</b> stars add up over time, and every 500 stars sets off a big fireworks show.</li>
+          <li><b>Streak bonuses:</b> every 7 days in a row earns 10 bonus stars and a celebration. Every 30 days in a row earns 50 more and a bigger show.</li>
+          <li><b>More than one round a day:</b> after finishing a list, start another round. It uses words not done yet that day, because scoring the same word twice in one day would throw off its schedule. Use the quick re-run to repeat words without scoring.</li>
+        </ul>
+      </div>
+      <div class="panel" id="backupPanel">
+        <h3>Backups and other phones</h3>
+        <p class="hint" style="margin:0 0 10px">Words and progress are saved only on this device. Save a backup now and then. To move to another phone or share with another grown-up, send the backup file and restore it there. Restoring replaces what is on that device, so practice on one device at a time.</p>
+        <p class="meta" id="lastBackup" style="margin:0 0 10px;font-size:13px"></p>
+        <div class="btnrow">
+          <button type="button" class="btn" data-act="backup">Save a backup file</button>
+          <button type="button" class="btn" data-act="shareBackup" id="shareBackupBtn" hidden>Send a backup</button>
+        </div>
+        <div class="btnrow" style="margin-top:8px">
+          <span class="btn filebtn"><span>Restore from a backup</span><input type="file" id="restoreInput" accept=".json,.txt,application/json,text/plain" aria-label="Restore from a backup file"></span>
+        </div>
+        <div id="restoreConfirm"></div>
+        <div style="margin-top:16px"><button type="button" class="btn small danger" data-act="erase" id="eraseBtn">Erase everything on this device</button></div>
+      </div>
+    </div>
+    <p class="about">Flashcard Fireworks keeps everything on this device. No accounts, no ads, no tracking. Nothing you enter leaves this device, and it works offline once it has been opened.</p>
+  </section>
+</main>
+
+<div id="cardMode" hidden role="dialog" aria-modal="true" aria-label="Practice">
+  <div class="cm-top">
+    <button class="iconbtn" id="cmClose" data-act="closeCard" aria-label="Close practice">&#x2715;</button>
+    <div class="grow"><span class="cm-count" id="cmCount"></span><div class="meter" id="cmMeter"></div></div>
+    <span class="cm-stars" id="cmStars" aria-label="Stars earned so far"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg><b>0</b></span>
+  </div>
+  <div class="cm-body" id="cmBody"></div>
+</div>
+
+<div id="milestone" class="msover" hidden role="dialog" aria-modal="true" aria-labelledby="msTitle">
+  <div class="msbox"><span class="msstar" id="msIcon"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg></span><p class="msnum" id="msTitle">500 stars!</p><p id="msMsg"></p><button type="button" class="btn primary" data-act="msClose">Yay!</button></div>
+</div>
+
+<div id="toast" hidden role="status"></div>
+
+<script src="lists.js"></script>
+<script>
+// ---- Pure scheduling + word logic (no DOM) ----
+const INTERVALS = [0, 1, 2, 4, 7, 14, 30];
+const LEVELS = [
+  { name: "New", every: "not tried yet" },
+  { name: "Learning", every: "daily" },
+  { name: "Learning", every: "every 2 days" },
+  { name: "Getting there", every: "every 4 days" },
+  { name: "Getting there", every: "weekly" },
+  { name: "Knows it", every: "every 2 weeks" },
+  { name: "Mastered", every: "monthly check" },
+];
+const GROUPS = [
+  { key: "new", label: "New", test: (b) => b === 0 },
+  { key: "learning", label: "Learning", test: (b) => b === 1 || b === 2 },
+  { key: "getting", label: "Getting there", test: (b) => b === 3 || b === 4 },
+  { key: "knows", label: "Knows it", test: (b) => b === 5 },
+  { key: "mastered", label: "Mastered", test: (b) => b === 6 },
+];
+const ALWAYS_CAP = new Set(["i", "i'm", "i'll", "i've", "i'd",
+  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+  "january", "february", "april", "june", "july", "august",
+  "september", "october", "november", "december"]);
+
+const TITLES = { mr: "Mr.", mrs: "Mrs.", ms: "Ms.", dr: "Dr." };
+
+function ymd(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function parseYmd(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+function addDays(s, n) { const d = parseYmd(s); d.setDate(d.getDate() + n); return ymd(d); }
+function daysBetween(a, b) { return Math.round((parseYmd(b) - parseYmd(a)) / 86400000); }
+function cmp(a, b) { return a < b ? -1 : a > b ? 1 : 0; }
+
+function cleanWord(raw) {
+  let w = String(raw || "").normalize("NFKC").replace(/[‘’ʼ`]/g, "'");
+  w = w.replace(/^[^A-Za-z0-9']+|[^A-Za-z0-9']+$/g, "").replace(/^'+|'+$/g, "");
+  if (!/[A-Za-z]/.test(w)) return "";
+  const lower = w.toLowerCase();
+  if (TITLES[lower]) return TITLES[lower];
+  if (ALWAYS_CAP.has(lower)) return lower.charAt(0).toUpperCase() + lower.slice(1);
+  return lower;
+}
+function wordId(display) {
+  const id = display.toLowerCase().replace(/'/g, "_").replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return id ? "w-" + id : "";
+}
+function parseInput(text) {
+  return String(text || "").split(/[\s,;|/•·]+/).map(cleanWord).filter(Boolean);
+}
+// statuses: new | have | repeat
+function classify(tokens, wordsById) {
+  const seen = new Set();
+  return tokens.map((display) => {
+    const id = wordId(display);
+    if (seen.has(id)) return { display, id, status: "repeat" };
+    seen.add(id);
+    const existing = wordsById.get(id);
+    return existing ? { display, id, status: "have", existing } : { display, id, status: "new" };
+  });
+}
+
+function scoredToday(w, today) { return w && w.lastSeen === today ? w.lastScore : 0; }
+
+// score: 3 = easily, 2 = some effort, 1 = very difficult
+function applyScore(w, score, today) {
+  const base = (w.lastSeen === today && w.prev) ? w.prev : { box: w.box || 0, due: w.due || null };
+  const early = base.box > 0 && !!base.due && base.due > today;
+  let box;
+  if (score === 3) box = base.box === 0 ? 3 : early ? base.box : Math.min(6, base.box + 1);
+  else if (score === 2) box = base.box === 0 ? 2 : Math.max(1, base.box);
+  else box = 1;
+  const due = (score === 3 && early) ? base.due : addDays(today, INTERVALS[box]);
+  const history = (w.history || []).filter((h) => h.d !== today);
+  history.push({ d: today, s: score });
+  return { box, due, lastSeen: today, lastScore: score, prev: base, history: history.slice(-400) };
+}
+
+function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function rng(seed) { let a = seed; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+
+// Start and finish on a confident word; spread the easier words between the tricky ones.
+function arrange(list, seed) {
+  const r = rng(hashStr(seed));
+  const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const easy = shuffle(list.filter((w) => w.box >= 3));
+  const tricky = shuffle(list.filter((w) => !(w.box >= 3)));
+  if (!easy.length) return tricky;
+  if (!tricky.length) return easy;
+  const first = easy.shift();
+  const last = easy.length ? easy.pop() : null;
+  const out = [first];
+  const gaps = easy.length + 1;
+  const per = tricky.length / gaps;
+  let ti = 0;
+  for (let g = 0; g < gaps; g++) {
+    const upto = Math.round(per * (g + 1));
+    while (ti < upto && ti < tricky.length) out.push(tricky[ti++]);
+    if (g < easy.length) out.push(easy[g]);
+  }
+  while (ti < tricky.length) out.push(tricky[ti++]);
+  if (last) out.push(last);
+  return out;
+}
+
+function newOrder(a, b) {
+  // Teacher's newest newsletter words first, then the flashcard pile in the order it was entered.
+  const an = a.src === "newsletter" ? 0 : 1, bn = b.src === "newsletter" ? 0 : 1;
+  if (an !== bn) return an - bn;
+  if (an === 0) return cmp(b.addedOn || "", a.addedOn || "") || cmp(a.addedAt || 0, b.addedAt || 0);
+  return cmp(a.addedAt || 0, b.addedAt || 0) || cmp(a.id, b.id);
+}
+
+function buildList(words, today, settings, exclude) {
+  const N = settings.listSize || 15;
+  const NEWMAX = settings.newPerDay || 5;
+  const ex = exclude || new Set();
+  const pool = words.filter((w) => !ex.has(w.id) && w.lastSeen !== today);
+  const due = pool.filter((w) => w.box > 0 && w.due && w.due <= today)
+    .sort((a, b) => a.box - b.box || cmp(a.due, b.due) || cmp(a.id, b.id));
+  const hardDue = due.filter((w) => w.box <= 2);
+  const easyDue = due.filter((w) => w.box >= 3);
+  const fresh = pool.filter((w) => !w.box).sort(newOrder);
+  const recent = (w) => w.lastSeen && daysBetween(w.lastSeen, today) < 2;
+  const ahead = pool.filter((w) => w.box > 0 && w.due && w.due > today && !recent(w))
+    .sort((a, b) => cmp(a.due, b.due) || b.box - a.box);
+  const easyTarget = Math.max(2, Math.round(N * 0.25));
+  const pick = [];
+  const take = (arr, n) => { let k = 0; for (const w of arr) { if (k >= n) break; if (!pick.includes(w)) { pick.push(w); k++; } } };
+  const easyCount = () => pick.filter((w) => w.box >= 3).length;
+
+  take(easyDue, Math.min(easyTarget, N));
+  take(ahead.filter((w) => w.box >= 3), Math.min(easyTarget - easyCount(), N - pick.length));
+  const newBase = Math.min(NEWMAX, fresh.length);
+  take(hardDue, Math.max(0, N - pick.length - newBase));
+  take(easyDue, Math.max(0, N - pick.length - newBase));
+  take(fresh, Math.min(N - pick.length, NEWMAX * 2));
+  take(ahead, N - pick.length);
+  return arrange(pick, today + ":" + pick.length + ":" + ex.size);
+}
+
+function groupOf(box) { return GROUPS.find((g) => g.test(box || 0)); }
+function groupCounts(words) {
+  const c = {}; GROUPS.forEach((g) => (c[g.key] = 0));
+  words.forEach((w) => { c[groupOf(w.box).key]++; });
+  return c;
+}
+function practicedDays(words) {
+  const s = new Set();
+  words.forEach((w) => (w.history || []).forEach((h) => s.add(h.d)));
+  return s;
+}
+function hardCount(w) { return (w.history || []).filter((h) => h.s === 1).length; }
+
+if (typeof module !== "undefined") module.exports = { INTERVALS, LEVELS, GROUPS, ymd, addDays, daysBetween, cleanWord, wordId, parseInput, classify, applyScore, arrange, buildList, groupCounts, practicedDays, hardCount, scoredToday };
+
+// ---- Game helpers ----
+const MILESTONES = [3, 5, 7, 10, 14, 21, 30, 50, 75, 100, 150, 200, 365];
+function starsFor(score) { return score === 3 ? 3 : score === 2 ? 2 : score === 1 ? 1 : 0; }
+function streakInfo(days, today) {
+  let current = 0;
+  let d = days.has(today) ? today : addDays(today, -1);
+  while (days.has(d)) { current++; d = addDays(d, -1); }
+  let best = 0, run = 0, prev = null;
+  Array.from(days).sort().forEach((x) => { run = prev && daysBetween(prev, x) === 1 ? run + 1 : 1; if (run > best) best = run; prev = x; });
+  return { current, best, today: days.has(today) };
+}
+function totalStars(words) { let t = 0; words.forEach((w) => (w.history || []).forEach((h) => { t += starsFor(h.s); })); return t; }
+function groupIndex(box) { return GROUPS.findIndex((g) => g.test(box || 0)); }
+if (typeof module !== "undefined") Object.assign(module.exports, { MILESTONES, starsFor, streakInfo, totalStars, groupIndex });
+
+</script>
+<script>
+(function () {
+  "use strict";
+  const $ = (s, el) => (el || document).querySelector(s);
+  const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const DEFAULTS = { childName: "", listSize: 15, newPerDay: 5 };
+  const VIEWS = ["today", "words", "add", "progress"];
+  const SCORE_NAMES = { 3: "Easily", 2: "Some effort", 1: "Very difficult" };
+
+  const S = {
+    db: null, sample: null, photoOK: false, photoBusy: false, photoMsg: "",
+    today: ymd(new Date()),
+    words: new Map(), wordsLoaded: false, loadError: null,
+    day: null, dayLoaded: false,
+    settings: Object.assign({}, DEFAULTS),
+    readOnly: false, offline: false, noDb: false,
+    view: "today", filter: "all", search: "",
+    expanded: null, renaming: null, confirmDelete: null, wordsDirty: false,
+    addSrc: "flashcards", lastAdd: null, adding: false,
+    card: null,
+  };
+
+  // ---------- dates ----------
+  function longDate(s) { return parseDate(s).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }); }
+  function shortDate(s) { return parseDate(s).toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  function parseDate(s) { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); }
+  function nextLabel(w) {
+    if (!w.box) return "not tried yet";
+    if (!w.due) return "";
+    const n = daysBetween(S.today, w.due);
+    if (n <= 0) return "due today";
+    if (n === 1) return "next tomorrow";
+    if (n < 7) return "next " + parseDate(w.due).toLocaleDateString(undefined, { weekday: "long" });
+    return "next " + shortDate(w.due);
+  }
+  function levelLabel(w) { const L = LEVELS[w.box || 0]; return w.box ? L.name + " · " + L.every : "New"; }
+  function pips(box) {
+    let h = '<span class="pips' + (box === 6 ? " m" : "") + '" aria-hidden="true">';
+    for (let i = 1; i <= 6; i++) h += '<i class="' + (i <= (box || 0) ? "on" : "") + '"></i>';
+    return h + "</span>";
+  }
+
+  // ---------- writes: one at a time, with a retry on transient errors ----------
+  let chain = Promise.resolve();
+  function queue(fn) {
+    const p = chain.then(() => withRetry(fn));
+    chain = p.catch(() => {});
+    return p;
+  }
+  async function withRetry(fn) {
+    for (let a = 0; ; a++) {
+      try { return await fn(); }
+      catch (e) {
+        const code = e && e.code;
+        if ((code === "unavailable" || code === "resource_exhausted") && a < 3) {
+          await sleep(code === "resource_exhausted" ? 2000 : 400 + Math.random() * 600);
+          continue;
+        }
+        onWriteError(e);
+        throw e;
+      }
+    }
+  }
+  function onWriteError() {
+    toast(LocalDB.ok() ? "Couldn't save that. Try again." : "This browser isn't saving your words. A private or incognito window can't keep them.");
+    renderBanner();
+  }
+  function setReadOnly(v) { S.readOnly = v; document.body.classList.toggle("ro", v); route(); renderBanner(); renderAll(); }
+
+  let toastT = null;
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 4200);
+  }
+
+  // ---------- on-device database (same calls as the shared version) ----------
+  const LocalDB = (() => {
+    const KEY = "flashcard-fireworks:v1";
+    let docs = {}; let ok = true; let dirty = false; let pending = false;
+    const listeners = [];
+    function load() {
+      try { const raw = localStorage.getItem(KEY); const j = raw ? JSON.parse(raw) : null; docs = j && j.docs && typeof j.docs === "object" ? j.docs : {}; }
+      catch (e) { docs = {}; ok = false; }
+    }
+    load();
+    function persist() {
+      if (!dirty) return; dirty = false;
+      try { localStorage.setItem(KEY, JSON.stringify({ format: 1, docs })); ok = true; } catch (e) { ok = false; }
+    }
+    const meta = { fromCache: false, hasPendingWrites: false };
+    const snapDoc = (p) => { const d = docs[p]; return { id: p.split("/").pop(), exists: !!d, data: () => d, metadata: meta }; };
+    function snapCol(p) {
+      const pre = p + "/", depth = p.split("/").length + 1;
+      const list = Object.keys(docs).filter((k) => k.indexOf(pre) === 0 && k.split("/").length === depth).sort().map(snapDoc);
+      return { docs: list, size: list.length, empty: !list.length, metadata: meta, docChanges: () => [] };
+    }
+    const changed = new Set();
+    function flush() {
+      pending = false; persist();
+      const paths = Array.from(changed); changed.clear();
+      listeners.slice().forEach((l) => {
+        if (l.kind === "doc" && (paths.indexOf(l.path) >= 0 || paths.indexOf("*") >= 0)) l.cb(snapDoc(l.path));
+        if (l.kind === "col" && paths.some((x) => x === "*" || x.slice(0, x.lastIndexOf("/")) === l.path)) l.cb(snapCol(l.path));
+      });
+    }
+    function touch(p) { dirty = true; changed.add(p); if (!pending) { pending = true; setTimeout(flush, 0); } }
+    const clone = (o) => JSON.parse(JSON.stringify(o));
+    function listen(kind, path, cb) {
+      const l = { kind, path, cb }; listeners.push(l);
+      setTimeout(() => cb(kind === "doc" ? snapDoc(path) : snapCol(path)), 0);
+      return () => { const i = listeners.indexOf(l); if (i >= 0) listeners.splice(i, 1); };
+    }
+    function doc(p) {
+      return {
+        id: p.split("/").pop(), path: p,
+        get: async () => snapDoc(p),
+        set: async (data) => { docs[p] = clone(data); touch(p); },
+        update: async (data) => {
+          if (!docs[p]) throw { code: "invalid_argument", message: "Missing document" };
+          docs[p] = Object.assign({}, docs[p], clone(data)); touch(p);
+        },
+        delete: async () => { delete docs[p]; touch(p); },
+        onSnapshot: (cb) => listen("doc", p, cb),
+      };
+    }
+    function collection(p) { return { path: p, doc: (id) => doc(p + "/" + id), onSnapshot: (cb) => listen("col", p, cb) }; }
+    window.addEventListener("storage", (e) => { if (e.key === KEY) { load(); changed.add("*"); flush(); } });
+    window.addEventListener("pagehide", persist);
+    document.addEventListener("visibilitychange", persist);
+    return {
+      doc, collection,
+      ok: () => ok,
+      exportDocs: () => clone(docs),
+      replaceAll(next) { docs = clone(next || {}); dirty = true; changed.add("*"); flush(); },
+    };
+  })();
+
+  // ---------- actions ----------
+  function wordsArr() { return Array.from(S.words.values()); }
+  function allToday() { return (S.day && Array.isArray(S.day.words)) ? S.day.words : []; }
+  function dayStarts() { const st = S.day && Array.isArray(S.day.starts) && S.day.starts.length ? S.day.starts : [0]; return st; }
+  function roundNumber() { return dayStarts().length; }
+  // The current round: today's words from the last round start onward.
+  function todayIds() { const st = dayStarts(); return allToday().slice(st[st.length - 1]).filter((id) => S.words.has(id)); }
+
+  function completesList(id) {
+    const ids = todayIds();
+    if (!ids.includes(id) || scoredToday(S.words.get(id), S.today)) return false;
+    return ids.every((x) => x === id || scoredToday(S.words.get(x), S.today));
+  }
+  // Scores tapped this session, so star totals update before the saved copy catches up.
+  const pend = { day: null, s: {} };
+  function pendingScore(id) { if (pend.day !== S.today) { pend.day = S.today; pend.s = {}; } return pend.s[id] || 0; }
+  function todayScoreOf(w) { return pendingScore(w.id) || (S.card && S.card.marks[w.id]) || scoredToday(w, S.today); }
+  // Streak bonuses: saved as bonuses/<date>-s7 and bonuses/<date>-s30, so each is earned once even with two phones.
+  const bonuses = new Map(), pendBonus = new Map();
+  function bonusStars() {
+    let t = 0;
+    bonuses.forEach((b) => { t += b.stars || 0; });
+    pendBonus.forEach((b, id) => { if (!bonuses.has(id)) t += b.stars || 0; });
+    return t;
+  }
+  function allTimeStars() {
+    let t = bonusStars();
+    S.words.forEach((w) => { (w.history || []).forEach((h) => { if (h.d !== S.today) t += starsFor(h.s); }); t += starsFor(todayScoreOf(w)); });
+    return t;
+  }
+  function dueBonuses() {
+    const n = streakNow(true).current; const out = [];
+    if (n > 0 && n % 7 === 0) out.push({ id: S.today + "-s7", date: S.today, kind: "streak7", streak: n, stars: 10 });
+    if (n > 0 && n % 30 === 0) out.push({ id: S.today + "-s30", date: S.today, kind: "streak30", streak: n, stars: 50 });
+    return out.filter((b) => !bonuses.has(b.id) && !pendBonus.has(b.id));
+  }
+  function nextBonusText(info) {
+    const cur = info.current;
+    const n7 = (Math.floor(cur / 7) + 1) * 7, n30 = (Math.floor(cur / 30) + 1) * 30;
+    const day = Math.min(n7, n30);
+    const stars = (day % 7 === 0 ? 10 : 0) + (day % 30 === 0 ? 50 : 0);
+    return "Day " + day + " of the streak earns " + stars + " bonus stars.";
+  }
+  const STAR_GOAL = 500;
+  const starsCelebrated = new Set();
+  function scoreWord(id, s) {
+    if (S.readOnly) return null;
+    const w = S.words.get(id); if (!w) return null;
+    const finishing = !S.card && completesList(id);
+    const base = (w.lastSeen === S.today && w.prev) ? w.prev : { box: w.box || 0 };
+    const patch = applyScore(w, s, S.today);
+    const before = allTimeStars();
+    pendingScore(id); pend.s[id] = s;
+    const earned = dueBonuses();
+    earned.forEach((b) => {
+      pendBonus.set(b.id, b);
+      queue(() => S.db.doc("bonuses/" + b.id).set({ date: b.date, kind: b.kind, streak: b.streak, stars: b.stars, at: Date.now() })).catch(() => {});
+    });
+    const after = allTimeStars();
+    queue(() => S.db.doc("words/" + id).update(patch)).catch(() => {});
+    if (finishing) setTimeout(() => celebrate(false), 150);
+    const shows = [];
+    if (earned.length) shows.push(streakBonusShow(earned));
+    const mark = Math.floor(after / STAR_GOAL) * STAR_GOAL;
+    if (mark > 0 && Math.floor(before / STAR_GOAL) < Math.floor(after / STAR_GOAL) && !starsCelebrated.has(mark)) {
+      starsCelebrated.add(mark);
+      shows.push(starShow(mark));
+    }
+    if (shows.length) setTimeout(() => shows.forEach(showOverlay), finishing ? 1800 : 500);
+    return { from: base.box || 0, to: patch.box };
+  }
+  const GOLD = ["#FFD23F", "#FFB400", "#FFE680", "#FF8A3D", "#FF6FB5", "#3DDC97", "#7FB2FF"];
+  const WARM = ["#FF8A3D", "#FF5A5F", "#FFD23F", "#FFB400", "#FF6FB5"];
+  function starShow(mark) {
+    const name = S.settings.childName;
+    return { icon: STAR, cls: "", title: mark.toLocaleString() + " stars!", sound: "milestone", rockets: 24, palette: GOLD,
+      msg: (name ? "Amazing work, " + name + "! " : "Amazing work! ") + "That\u2019s " + mark.toLocaleString() + " stars of practice. Every word adds more." };
+  }
+  function streakBonusShow(list) {
+    const n = list[0].streak; const stars = list.reduce((t, b) => t + b.stars, 0); const big = list.some((b) => b.kind === "streak30");
+    const name = S.settings.childName;
+    return { icon: FLAME, cls: "flame", title: n + "-day streak!", sound: "milestone", rockets: big ? 30 : 14, palette: big ? GOLD : WARM,
+      msg: n + " days in a row" + (name ? ", " + name : "") + "! Here are " + stars + " bonus stars." };
+  }
+  const overlayQ = []; let overlayOpen = false;
+  function showOverlay(o) { overlayQ.push(o); if (!overlayOpen) nextOverlay(); }
+  function nextOverlay() {
+    const o = overlayQ.shift();
+    if (!o) { overlayOpen = false; $("#milestone").hidden = true; return; }
+    overlayOpen = true;
+    const icon = $("#msIcon"); icon.innerHTML = o.icon; icon.className = "msstar " + o.cls; void icon.offsetWidth;
+    $("#msTitle").textContent = o.title; $("#msMsg").textContent = o.msg;
+    $("#milestone").hidden = false;
+    FX.fireworks(o.rockets, o.palette); SND.play(o.sound);
+    const btn = $("#milestone .btn"); if (btn) btn.focus();
+  }
+  function makeList() {
+    const list = buildList(wordsArr(), S.today, S.settings);
+    if (!list.length) { toast("Nothing is ready for today. Add some words first."); return; }
+    queue(() => S.db.doc("days/" + S.today).set({ date: S.today, words: list.map((w) => w.id), starts: [0], made: Date.now() })).catch(() => {});
+  }
+  function newRound(thenPractice) {
+    if (S.readOnly || !S.day) return;
+    const all = allToday();
+    const list = buildList(wordsArr(), S.today, S.settings, new Set(all));
+    if (!list.length) { toast("No more words are ready today. Try the quick re-run of the tricky ones instead."); return; }
+    const ids = list.map((w) => w.id);
+    const starts = dayStarts().concat(all.length);
+    S.day = Object.assign({}, S.day, { words: all.concat(ids), starts });
+    queue(() => S.db.doc("days/" + S.today).update({ words: all.concat(ids), starts })).catch(() => {});
+    if (thenPractice) openCard("practice", ids); else renderAll();
+  }
+  function addMore() {
+    const ids = (S.day && S.day.words) || [];
+    const extra = buildList(wordsArr(), S.today, { listSize: 5, newPerDay: S.settings.newPerDay }, new Set(ids));
+    if (!extra.length) { toast("Every word is already on today's list or was practiced today."); return; }
+    queue(() => S.db.doc("days/" + S.today).update({ words: ids.concat(extra.map((w) => w.id)) })).catch(() => {});
+  }
+  function rebuild() {
+    const all = allToday(); const st = dayStarts(); const from = st[st.length - 1];
+    const before = all.slice(0, from);
+    const keep = all.slice(from).filter((id) => scoredToday(S.words.get(id), S.today));
+    const n = Math.max(0, S.settings.listSize - keep.length);
+    const fresh = n ? buildList(wordsArr(), S.today, Object.assign({}, S.settings, { listSize: n }), new Set(before.concat(keep))) : [];
+    queue(() => S.db.doc("days/" + S.today).set({ date: S.today, words: before.concat(keep, fresh.map((w) => w.id)), starts: st, made: Date.now() })).catch(() => {});
+  }
+  function saveSettings(patch) {
+    const next = Object.assign({}, S.settings, patch);
+    S.settings = next; renderSettings(); renderAll();
+    queue(() => S.db.doc("settings/main").set({ childName: next.childName || "", listSize: next.listSize, newPerDay: next.newPerDay, lastBackup: next.lastBackup || "" })).catch(() => {});
+  }
+
+  async function addWords() {
+    if (S.adding || S.readOnly) return;
+    const items = classify(parseInput($("#addText").value), S.words);
+    const fresh = items.filter((i) => i.status === "new");
+    const have = items.filter((i) => i.status === "have");
+    if (!fresh.length) return;
+    // Typed words are the family's own words (class lists are added from the panel above).
+    const listDate = null;
+    S.adding = true; renderPreview();
+    const added = []; let failed = false; const now = Date.now();
+    for (let k = 0; k < fresh.length; k++) {
+      const it = fresh[k];
+      const doc = { word: it.display, src: S.addSrc, addedOn: listDate || S.today, addedAt: now + k, box: 0, due: null, lists: listDate ? [listDate] : [], history: [] };
+      try { await queue(() => S.db.doc("words/" + it.id).set(doc)); added.push(it.display); }
+      catch (e) { failed = true; break; }
+    }
+    S.adding = false;
+    S.lastAdd = { added, dupes: have.map((i) => i.display), failed, total: fresh.length };
+    if (!failed) $("#addText").value = "";
+    renderPreview(); renderAddResult();
+  }
+
+  async function renameWord(id, raw) {
+    const w = S.words.get(id); if (!w) return;
+    const display = cleanWord(raw);
+    if (!display) { toast("Type a word to save."); return; }
+    const nid = wordId(display);
+    if (nid === id) {
+      if (display !== w.word) await queue(() => S.db.doc("words/" + id).update({ word: display })).catch(() => {});
+      S.renaming = null; forceWords(); return;
+    }
+    if (S.words.has(nid)) { toast("“" + display + "” is already in the stack."); return; }
+    const copy = {}; Object.keys(w).forEach((k) => { if (k !== "id") copy[k] = w[k]; });
+    copy.word = display;
+    try {
+      await queue(() => S.db.doc("words/" + nid).set(copy));
+      await queue(() => S.db.doc("words/" + id).delete());
+      const ids = (S.day && S.day.words) || [];
+      if (ids.includes(id)) await queue(() => S.db.doc("days/" + S.today).update({ words: ids.map((x) => (x === id ? nid : x)) }));
+    } catch (e) { return; }
+    S.renaming = null; S.expanded = nid; forceWords();
+  }
+  function forceWords() {
+    const ae = document.activeElement;
+    if (ae && $("#wordsList").contains(ae) && typeof ae.blur === "function") ae.blur();
+    renderWords();
+  }
+  async function deleteWord(id) {
+    try {
+      await queue(() => S.db.doc("words/" + id).delete());
+      const ids = (S.day && S.day.words) || [];
+      if (ids.includes(id)) await queue(() => S.db.doc("days/" + S.today).update({ words: ids.filter((x) => x !== id) }));
+    } catch (e) { return; }
+    S.expanded = null; S.confirmDelete = null; renderWords();
+  }
+  function resetWord(id) {
+    if (pend.s[id]) delete pend.s[id];
+    queue(() => S.db.doc("words/" + id).update({ box: 0, due: null, lastSeen: null, lastScore: 0, prev: null })).catch(() => {});
+  }
+
+  // ---------- card mode ----------
+  function openCard(mode, given) {
+    let ids = [];
+    if (mode === "practice") ids = given || todayIds();
+    else if (mode === "sort") ids = wordsArr().filter((w) => !w.box && w.lastSeen !== S.today).sort((a, b) => (a.addedAt || 0) - (b.addedAt || 0)).map((w) => w.id);
+    else if (mode === "again") ids = todayIds().filter((id) => { const s = scoredToday(S.words.get(id), S.today); return s === 1 || s === 2; });
+    if (!ids.length) return;
+    let i = 0;
+    if (mode === "practice") { const j = ids.findIndex((id) => !scoredToday(S.words.get(id), S.today)); i = j < 0 ? 0 : j; }
+    S.card = { mode, ids, i, done: false, deal: true, marks: {}, shown: null, celebrated: false };
+    lastStars = -1;
+    $("#cardMode").hidden = false; document.body.style.overflow = "hidden";
+    renderCard(); $("#cmClose").focus();
+  }
+  function closeCard() {
+    if (S.card) clearTimeout(S.card.t);
+    S.card = null; $("#cardMode").hidden = true; document.body.style.overflow = ""; renderAll();
+  }
+  function cardScoreOf(id) {
+    const c = S.card; if (!c) return 0;
+    return c.marks[id] || scoredToday(S.words.get(id), S.today);
+  }
+  function cardScore(s) {
+    const c = S.card; if (!c || S.readOnly) return;
+    const id = c.ids[c.i];
+    const info = scoreWord(id, s);
+    c.marks[id] = s;
+    SND.play(s);
+    showFeedback(s, info);
+    if (s === 3) { const card = $("#cmBody .icard"); if (card) { const r = card.getBoundingClientRect(); FX.pop(r.left + r.width / 2, r.top + r.height * 0.45); } }
+    updateCardControls();
+    clearTimeout(c.t); c.t = setTimeout(advance, 1050);
+  }
+  const CHEERS = {
+    3: ["Great job!", "Awesome!", "You got it!", "Super reading!", "Wow!", "Nailed it!"],
+    2: ["Good work!", "You figured it out!", "Nice job!", "You got there!"],
+    1: ["Good try!", "Keep going!", "We'll practice it again!", "You're learning it!"],
+  };
+  function showFeedback(s, info) {
+    const fb = $("#cmFb"); if (!fb) return;
+    const list = CHEERS[s]; const msg = list[Math.floor(Math.random() * list.length)];
+    let extra = "+" + starsFor(s) + (starsFor(s) === 1 ? " star" : " stars");
+    if (info && groupIndex(info.to) > groupIndex(info.from) && groupIndex(info.to) >= 2) {
+      extra = info.to === 6 ? "Mastered! " + extra : "Level up! " + extra;
+    }
+    fb.className = "fb s" + s;
+    fb.innerHTML = esc(msg) + "<small>" + esc(extra) + "</small>";
+    void fb.offsetWidth; fb.classList.add("show");
+  }
+  function advance() {
+    const c = S.card; if (!c) return;
+    if (c.mode === "practice") {
+      const n = c.ids.length;
+      for (let k = 1; k <= n; k++) {
+        const j = (c.i + k) % n; const id = c.ids[j];
+        if (S.words.has(id) && !cardScoreOf(id)) { c.i = j; c.deal = true; renderCard(); return; }
+      }
+      c.done = true; renderCard(); return;
+    }
+    let j = c.i + 1;
+    while (j < c.ids.length && !S.words.has(c.ids[j])) j++;
+    if (j < c.ids.length) { c.i = j; c.deal = true; } else c.done = true;
+    renderCard();
+  }
+  function back() {
+    const c = S.card; if (!c) return;
+    clearTimeout(c.t);
+    if (c.done) { c.done = false; renderCard(); return; }
+    let j = c.i - 1; while (j >= 0 && !S.words.has(c.ids[j])) j--;
+    if (j >= 0) { c.i = j; c.deal = true; renderCard(); }
+  }
+  function fitWord() {
+    const card = $("#cmBody .icard"); if (!card) return;
+    const el = card.querySelector(".word"); if (!el) return;
+    const W = card.clientWidth, H = card.clientHeight;
+    let size = Math.min(H * 0.46, (W * 1.75) / Math.max(3, el.textContent.length));
+    el.style.fontSize = size + "px";
+    let g = 0; while (el.scrollWidth > W * 0.92 && g++ < 24) { size *= 0.92; el.style.fontSize = size + "px"; }
+  }
+
+  // ---------- class word lists ----------
+  const CLASS = Array.isArray(window.FF_CLASS_LISTS) ? window.FF_CLASS_LISTS : [];
+  const classPicked = new Set();
+  function classWords(list) {
+    const out = [], seen = new Set();
+    const addAll = (arr, trick) => (arr || []).forEach((w) => { const d = cleanWord(w); const id = wordId(d); if (id && !seen.has(id)) { seen.add(id); out.push({ display: d, id, trick }); } });
+    addAll(list.trick, true); addAll(list.heart, false);
+    return out;
+  }
+  function classPickedWords() {
+    const map = new Map();
+    CLASS.forEach((l) => {
+      if (!classPicked.has(l.id)) return;
+      classWords(l).forEach((x) => {
+        const cur = map.get(x.id) || { display: x.display, id: x.id, trick: false, dates: new Set() };
+        cur.trick = cur.trick || x.trick; if (l.date) cur.dates.add(l.date); map.set(x.id, cur);
+      });
+    });
+    return Array.from(map.values());
+  }
+  function renderClassLists() {
+    const panel = $("#classPanel"); if (!panel) return;
+    if (!CLASS.length) { panel.hidden = true; return; }
+    $("#classLists").innerHTML = CLASS.map((l) => {
+      const ws = classWords(l); const fresh = ws.filter((x) => !S.words.has(x.id)).length; const id = "cl-" + l.id;
+      return '<label class="clist" for="' + esc(id) + '"><input type="checkbox" id="' + esc(id) + '" data-list="' + esc(l.id) + '"' + (classPicked.has(l.id) ? " checked" : "") + '>' +
+        '<span class="grow"><b>' + esc(l.name) + "</b><small>" + ws.length + " words · " + (fresh === ws.length ? "all new" : fresh ? fresh + " new for you" : "already added") + "</small></span></label>";
+    }).join("");
+    updateClassBtn();
+  }
+  function updateClassBtn() {
+    const btn = $("#classAddBtn"); const items = classPickedWords();
+    const fresh = items.filter((x) => !S.words.has(x.id)).length;
+    btn.disabled = !fresh;
+    btn.textContent = !items.length ? "Tick a list to add it" : fresh ? "Add " + fresh + " new word" + (fresh === 1 ? "" : "s") : "Those words are already added";
+  }
+  async function addClassLists() {
+    const items = classPickedWords(); if (!items.length) return;
+    let added = 0, k = 0; const now = Date.now();
+    for (const it of items) {
+      const dates = Array.from(it.dates).sort(); const w = S.words.get(it.id);
+      try {
+        if (!w) {
+          const d = { word: it.display, src: "newsletter", addedOn: dates[dates.length - 1] || S.today, addedAt: now + k++, box: 0, due: null, lists: dates, history: [] };
+          if (it.trick) d.trick = true;
+          await S.db.doc("words/" + it.id).set(d); added++;
+        } else {
+          const lists = Array.from(new Set((w.lists || []).concat(dates))).sort(); const patch = {};
+          if (lists.length !== (w.lists || []).length) patch.lists = lists;
+          if (it.trick && !w.trick) patch.trick = true;
+          if (Object.keys(patch).length) await S.db.doc("words/" + it.id).update(patch);
+        }
+      } catch (e) { onWriteError(e); break; }
+    }
+    classPicked.clear();
+    const had = items.length - added;
+    $("#classResult").textContent = "Added " + added + " new word" + (added === 1 ? "" : "s") + "." + (had ? " " + had + " " + (had === 1 ? "was" : "were") + " already in your stack." : "") + " Go to Today to make a list.";
+    renderClassLists();
+  }
+
+  // ---------- backups ----------
+  let pendingRestore = null, confirmErase = false;
+  function backupJSON() {
+    return JSON.stringify({ app: "Flashcard Fireworks", format: 1, exported: new Date().toISOString(), reader: S.settings.childName || "", docs: LocalDB.exportDocs() });
+  }
+  function backupBase() { return "flashcard-fireworks-" + (S.settings.childName ? S.settings.childName.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" : "") + S.today; }
+  function markBackup() { saveSettings({ lastBackup: S.today }); }
+  function saveBackup() {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([backupJSON()], { type: "application/json" }));
+    a.download = backupBase() + ".json"; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+    markBackup(); toast("Backup saved to your downloads.");
+  }
+  function shareFile() { try { return new File([backupJSON()], backupBase() + ".txt", { type: "text/plain" }); } catch (e) { return null; } }
+  function canShareFiles() { try { const f = new File(["x"], "x.txt", { type: "text/plain" }); return !!(navigator.canShare && navigator.share && navigator.canShare({ files: [f] })); } catch (e) { return false; } }
+  async function shareBackup() {
+    const f = shareFile(); if (!f) return;
+    try { await navigator.share({ files: [f], title: "Flashcard Fireworks backup" }); markBackup(); }
+    catch (e) { if (!e || e.name !== "AbortError") toast("Sending didn't work here. Use Save a backup file instead."); }
+  }
+  async function readBackup(file) {
+    if (!file) return;
+    try {
+      const j = JSON.parse(await file.text());
+      if (!j || j.app !== "Flashcard Fireworks" || !j.docs || typeof j.docs !== "object") throw new Error("bad");
+      pendingRestore = j;
+    } catch (e) { pendingRestore = null; toast("That file isn't a Flashcard Fireworks backup."); }
+    $("#restoreInput").value = ""; renderBackup();
+  }
+  function renderBackup() {
+    const last = S.settings.lastBackup;
+    $("#lastBackup").textContent = last ? "Last backup: " + (last === S.today ? "today" : longDate(last)) + "." : "No backup saved yet on this device.";
+    $("#shareBackupBtn").hidden = !canShareFiles();
+    const box = $("#restoreConfirm");
+    if (pendingRestore) {
+      const n = Object.keys(pendingRestore.docs).filter((k) => k.indexOf("words/") === 0).length;
+      const when = pendingRestore.exported ? new Date(pendingRestore.exported).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" }) : "an earlier date";
+      box.innerHTML = '<div class="confirm"><p>Replace everything on this device with the backup from <b>' + esc(when) + "</b>" + (pendingRestore.reader ? " for <b>" + esc(pendingRestore.reader) + "</b>" : "") + " (" + n + " words)?</p>" +
+        '<div class="btnrow"><button type="button" class="btn primary" data-act="restoreYes">Replace with backup</button><button type="button" class="btn" data-act="restoreNo">Cancel</button></div></div>';
+    } else box.innerHTML = "";
+    $("#eraseBtn").textContent = confirmErase ? "Tap again to erase everything" : "Erase everything on this device";
+  }
+
+  // ---------- game layer ----------
+  const FLAME = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.3 1.6c.5 3.1-1.1 5-2.8 6.9C7.7 10.5 5.6 12.8 5.6 16c0 3.6 2.9 6.4 6.4 6.4s6.4-2.8 6.4-6.4c0-2.7-1.3-4.7-2.7-6.2-.2 1.7-1.1 2.9-2.3 3.4.7-4.3-.4-8.7-1.1-11.6z"/><path fill="#fff" fill-opacity=".5" d="M12 13.6c-1 1.3-2.5 2.4-2.5 4.4 0 1.5 1.1 2.6 2.5 2.6s2.5-1.1 2.5-2.6c0-1.9-1.4-3-2.5-4.4z"/></svg>';
+  const STAR = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.4L12 17l-5.7 3.1 1.2-6.4-4.7-4.4 6.4-.8z"/></svg>';
+  function streakNow(includeToday) {
+    const days = practicedDays(wordsArr());
+    if (includeToday) days.add(S.today);
+    return streakInfo(days, S.today);
+  }
+  function starsToday() {
+    let t = 0;
+    S.words.forEach((w) => { t += starsFor(todayScoreOf(w)); });
+    return t;
+  }
+  function streakCard() {
+    const info = streakNow(false);
+    const days = practicedDays(wordsArr());
+    const name = S.settings.childName;
+    let msg;
+    if (info.today) msg = "Today counts! See you tomorrow.";
+    else if (info.current) msg = "Practice today to keep " + (name ? esc(name) + "\u2019s" : "the") + " streak going.";
+    else msg = "Practice today to start a streak.";
+    let week = "";
+    for (let k = 6; k >= 0; k--) {
+      const d = addDays(S.today, -k); const on = days.has(d);
+      week += '<span class="wd' + (on ? " on" : "") + (k === 0 ? " today" : "") + '"><span class="dot">' + (on ? FLAME : "") + "</span><small>" + parseDate(d).toLocaleDateString(undefined, { weekday: "narrow" }) + "</small></span>";
+    }
+    return '<div class="streakcard' + (info.today ? " lit" : "") + '"><span class="flamebig">' + FLAME + "</span>" +
+      '<div><b class="sc-num">' + info.current + "-day streak</b>" + '<span class="sc-msg">' + msg + (info.best > info.current ? " Best: " + info.best + " days." : "") + " " + nextBonusText(info) + "</span></div>" +
+      '<div class="week" aria-label="Practice this week">' + week + "</div></div>";
+  }
+  function starCard() {
+    const t = allTimeStars(); const next = (Math.floor(t / STAR_GOAL) + 1) * STAR_GOAL; const pct = 100 * (t % STAR_GOAL) / STAR_GOAL;
+    return '<div class="starcard"><span class="starbig">' + STAR + '</span><div class="grow"><b class="sc-num">' + t.toLocaleString() + " stars</b>" +
+      '<span class="sc-msg">' + (next - t).toLocaleString() + " more until the " + next.toLocaleString() + "-star fireworks" + (bonusStars() ? ". Includes " + bonusStars() + " streak bonus stars." : "") + "</span>" +
+      '<div class="meter starmeter" role="img" aria-label="' + Math.round(pct) + '% of the way to ' + next + ' stars"><i style="width:' + pct + '%"></i></div></div></div>';
+  }
+  function renderStreakPill() {
+    $("#starNum").textContent = allTimeStars().toLocaleString();
+    const info = streakNow(false);
+    const pill = $("#streakPill");
+    pill.classList.toggle("lit", info.today);
+    $("#streakNum").textContent = info.current;
+    pill.setAttribute("aria-label", info.current + "-day practice streak" + (info.today ? ", practiced today" : ""));
+  }
+  function celebrateHTML(title) {
+    const info = streakNow(true);
+    const name = S.settings.childName;
+    const stars = starsToday();
+    let milestone = "";
+    if (MILESTONES.indexOf(info.current) >= 0) milestone = info.current + " days in a row!";
+    if (info.current > 1 && info.current === info.best) milestone = (milestone ? milestone + " " : "") + "That's a new best streak!";
+    return '<div class="panel celebrate" style="width:100%;max-width:560px">' +
+      '<span class="flamebig">' + FLAME + "</span>" +
+      '<p class="big" style="margin:0">' + esc(title) + "</p>" +
+      (name ? '<p style="margin:0;font-size:17px">Great job, ' + esc(name) + "!</p>" : "") +
+      '<span class="streakline">' + info.current + "-day streak</span>" +
+      (milestone ? '<p class="milestone">' + esc(milestone) + "</p>" : "") +
+      '<span class="starline">' + STAR + stars + " stars today \u00B7 " + allTimeStars().toLocaleString() + " in all</span>";
+  }
+  function celebrate(inCard) {
+    FX.fireworks(); SND.play("finish");
+    if (!inCard) { const info = streakNow(true); toast("All done for today! " + info.current + "-day streak and " + starsToday() + " stars."); }
+  }
+  const FX = (() => {
+    let cv = null, ctx = null, dpr = 1, running = false;
+    const parts = [], rockets = [];
+    const colors = ["#FF5A5F", "#FFB400", "#20C997", "#4C8BF5", "#B36BFF", "#FF7A1A", "#3DD68C", "#FF6FB5"];
+    const reduce = () => !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const pick = () => colors[(Math.random() * colors.length) | 0];
+    function size() { if (!cv) return; dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr); }
+    function ensure() {
+      if (cv) return true;
+      try { cv = document.createElement("canvas"); cv.className = "fx"; cv.setAttribute("aria-hidden", "true"); document.body.appendChild(cv); ctx = cv.getContext("2d"); size(); window.addEventListener("resize", size); return !!ctx; }
+      catch (e) { return false; }
+    }
+    function burst(x, y, n, color, speed) {
+      for (let i = 0; i < n; i++) {
+        const a = (Math.PI * 2 * i) / n + Math.random() * 0.3, sp = (speed * (0.5 + Math.random() * 0.8)) * dpr;
+        parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 1, decay: 0.011 + Math.random() * 0.012, color: color && Math.random() > 0.25 ? color : pick(), r: (1.6 + Math.random() * 1.4) * dpr });
+      }
+    }
+    function loop() {
+      ctx.globalCompositeOperation = "destination-out"; ctx.fillStyle = "rgba(0,0,0,0.28)"; ctx.fillRect(0, 0, cv.width, cv.height);
+      ctx.globalCompositeOperation = "source-over";
+      for (let i = rockets.length - 1; i >= 0; i--) {
+        const r = rockets[i]; r.x += r.vx; r.y += r.vy; r.vy += 0.14 * dpr;
+        ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(r.x, r.y, 2.4 * dpr, 0, 7); ctx.fill();
+        if (r.y <= r.target || r.vy >= -1) { burst(r.x, r.y, 46 + ((Math.random() * 24) | 0), r.color, 4.2); rockets.splice(i, 1); }
+      }
+      for (let i = parts.length - 1; i >= 0; i--) {
+        const p = parts[i]; p.x += p.vx; p.y += p.vy; p.vx *= 0.984; p.vy = p.vy * 0.984 + 0.055 * dpr; p.life -= p.decay;
+        if (p.life <= 0) { parts.splice(i, 1); continue; }
+        ctx.globalAlpha = p.life; ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      if (rockets.length || parts.length || pending) requestAnimationFrame(loop);
+      else { running = false; ctx.clearRect(0, 0, cv.width, cv.height); }
+    }
+    let pending = 0;
+    function start() { if (!running) { running = true; requestAnimationFrame(loop); } }
+    return {
+      pop(x, y) { if (reduce() || !ensure()) return; burst(x * dpr, y * dpr, 22, null, 3.2); start(); },
+      fireworks(count, palette) {
+        if (reduce() || !ensure()) return;
+        const total = count || 8; pending += total;
+        const big = total > 12;
+        const color = () => palette ? palette[(Math.random() * palette.length) | 0] : pick();
+        const launch = () => {
+          const n = big && Math.random() < 0.4 ? 2 : 1;
+          for (let k = 0; k < n && pending > 0; k++) {
+            rockets.push({ x: (0.1 + Math.random() * 0.8) * cv.width, y: cv.height, vx: (Math.random() - 0.5) * 2 * dpr, vy: -(10 + Math.random() * 5) * dpr, target: cv.height * (0.1 + Math.random() * 0.35), color: color() });
+            pending--;
+          }
+          start();
+          if (pending > 0) setTimeout(launch, big ? 140 + Math.random() * 220 : 220 + Math.random() * 320);
+        };
+        launch();
+      },
+    };
+  })();
+  const SND = (() => {
+    let ac = null;
+    const enabled = () => { try { return localStorage.getItem("ws-sound") !== "off"; } catch (e) { return true; } };
+    function audio() {
+      if (!ac) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; try { ac = new A(); } catch (e) { return null; } }
+      if (ac.state === "suspended") ac.resume().catch(() => {});
+      return ac;
+    }
+    function tone(f, at, dur, type, vol) {
+      const a = audio(); if (!a) return;
+      const o = a.createOscillator(), g = a.createGain(), t = a.currentTime + at;
+      o.type = type || "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || 0.12, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+    }
+    return {
+      enabled,
+      set(v) { try { localStorage.setItem("ws-sound", v ? "on" : "off"); } catch (e) {} },
+      play(kind) {
+        if (!enabled()) return;
+        try {
+          if (kind === 1 || kind === 2 || kind === 3) { tone(784, 0, 0.16); tone(1175, 0.08, 0.3); }
+          else if (kind === "milestone") { [523, 659, 784, 1047, 1319, 1568].forEach((f, i) => tone(f, i * 0.1, 0.32)); [1047, 1319, 1568].forEach((f) => tone(f, 0.7, 0.9, "triangle", 0.08)); }
+          else if (kind === "finish") { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * 0.11, 0.3)); tone(1319, 0.46, 0.6); }
+        } catch (e) {}
+      },
+    };
+  })();
+
+  // ---------- rendering ----------
+  let raf = 0;
+  function scheduleRender() { if (raf) return; raf = requestAnimationFrame(() => { raf = 0; renderAll(); }); }
+  function renderAll() {
+    $("#forName").textContent = S.settings.childName ? "Word practice for " + S.settings.childName : "Daily word practice";
+    renderStreakPill(); renderToday(); renderWords(); renderPreview(); renderProgress(); renderClassLists(); renderBackup();
+    if (S.card) renderCard();
+  }
+  function renderBanner() {
+    const b = $("#banner");
+    if (!LocalDB.ok()) b.textContent = "This browser isn't saving your words. If this is a private or incognito window, open the page in a normal window.";
+    else b.textContent = "";
+  }
+
+  function scoreButtons(id, s) {
+    return '<div class="score" role="group" aria-label="Score">' +
+      [3, 2, 1].map((v) => '<button type="button" data-act="score" data-id="' + esc(id) + '" data-s="' + v + '" aria-pressed="' + (s === v) + '" aria-label="' + SCORE_NAMES[v] + '"' + (S.readOnly ? " disabled" : "") + ">" + ({ 3: "Easy", 2: "Effort", 1: "Hard" })[v] + "</button>").join("") +
+      "</div>";
+  }
+  function sortCallout(newCount) {
+    if (newCount <= (S.settings.newPerDay || 5) * 2 || S.readOnly) return "";
+    return '<div class="callout"><p><b>' + newCount + ' words</b> haven’t been tried yet. Go through them once so the ones already known skip ahead.</p>' +
+      '<button class="btn small" data-act="sort">Sort new words</button></div>';
+  }
+
+  function renderToday() {
+    const el = $("#todayBody");
+    $("#todayTitle").textContent = longDate(S.today);
+    const sub = $("#todaySub");
+    if (S.noDb) { sub.textContent = ""; el.innerHTML = ""; return; }
+    if (!S.wordsLoaded || !S.dayLoaded) { sub.textContent = "Loading the word list…"; el.innerHTML = ""; return; }
+    const words = wordsArr();
+    if (!words.length) {
+      sub.textContent = "";
+      el.innerHTML = '<div class="panel welcome"><p class="big">Welcome to Flashcard Fireworks!</p>' +
+        "<p>A few minutes of word practice a day. The app picks each day\u2019s words: tricky ones come back often, and known ones less and less. Finishing a list earns stars, keeps a streak going and sets off fireworks.</p>" +
+        '<div><label class="lbl" for="welcomeName">Your reader\u2019s first name (optional)</label><input type="text" class="plain" id="welcomeName" autocomplete="off" value="' + esc(S.settings.childName || "") + '"></div>' +
+        '<div class="btnrow"><a class="btn primary" href="#add">Add the class word lists</a><a class="btn" href="#add">Type our own words</a></div>' +
+        '<p class="hint" style="margin:0">Everything stays on this device. No account needed.</p></div>';
+      return;
+    }
+    const newCount = words.filter((w) => !w.box).length;
+    const streakHTML = streakCard() + starCard();
+    const ids = todayIds();
+    if (!ids.length) {
+      const due = words.filter((w) => w.box > 0 && w.due && w.due <= S.today && w.lastSeen !== S.today);
+      const tricky = due.filter((w) => w.box <= 2).length;
+      sub.textContent = "No list yet today.";
+      el.innerHTML = streakHTML +
+        '<div class="stats">' +
+        '<div class="stat"><b>' + tricky + "</b><span>tricky words due</span></div>" +
+        '<div class="stat"><b>' + (due.length - tricky) + "</b><span>easier words due</span></div>" +
+        '<div class="stat"><b>' + newCount + "</b><span>new, not tried yet</span></div></div>" +
+        (S.readOnly ? "" : '<button class="btn primary block" data-act="make">Make today’s list (' + S.settings.listSize + " words)</button>") +
+        sortCallout(newCount);
+      return;
+    }
+    const items = ids.map((id) => S.words.get(id));
+    const scores = items.map((w) => scoredToday(w, S.today));
+    const done = scores.filter(Boolean).length;
+    const tally = { 3: 0, 2: 0, 1: 0 }; scores.forEach((s) => { if (s) tally[s]++; });
+    const n = items.length;
+    const complete = done === n;
+    const round = roundNumber();
+    const earlier = allToday().length - ids.length;
+    sub.textContent = complete
+      ? (round > 1 ? "Round " + round + " is done. " : "Today's list is done. ") + (S.readOnly ? "" : "Want more practice? Start another round with new words.")
+      : (round > 1 ? "Round " + round + " today, after " + earlier + " words earlier. " : "") + "Tap a score after each word is read, or use practice mode for one big card at a time.";
+    const meter = [3, 2, 1].map((s) => tally[s] ? '<i class="m' + s + '" style="width:' + (100 * tally[s] / n) + '%"></i>' : "").join("");
+    const tallyHTML = '<div class="tally">' + [3, 2, 1].map((s) => '<span class="t' + s + '">' + SCORE_NAMES[s] + " " + tally[s] + "</span>").join("") + "</div>";
+    let html = '<div class="progress"><div class="ptext"><span>' + (round > 1 ? "Round " + round + ": " : "") + "<b>" + done + "</b> of " + n + " scored</span><span>" + (n - done) + " to go</span></div>" +
+      '<div class="meter" role="img" aria-label="' + done + " of " + n + ' scored">' + meter + "</div></div>";
+    if (complete) {
+      const again = tally[1] + tally[2];
+      html += '<div class="panel done"><p class="big">' + (round > 1 ? "Round " + round + " done" : "All " + n + " done") + (S.settings.childName ? ", great job " + esc(S.settings.childName) + "!" : "!") + "</p>" +
+        '<span class="starline">' + STAR + starsToday() + " stars today</span>" + tallyHTML +
+        '<div class="btnrow">' + (S.readOnly ? "" : '<button class="btn primary" data-act="round">Start another round</button>') +
+        (again ? '<button class="btn" data-act="again">Go over the ' + again + " tricky ones again</button>" : "") + "</div>" +
+        (S.readOnly ? "" : '<p class="hint">Another round picks ' + S.settings.listSize + " words not done yet today and scores them as usual.</p>") +
+        (again ? '<p class="hint">The quick re-run doesn’t change any scores.</p>' : "") + "</div>";
+    } else if (!S.readOnly) {
+      html += '<button class="btn primary block" data-act="practice">' + (done ? "Keep going in practice mode" : "Start practice mode") + "</button>";
+    }
+    html += '<ul class="rows">' + items.map((w, i) => {
+      const s = scores[i];
+      return '<li class="row' + (s ? " s" + s : "") + '"><div class="grow"><div class="w">' + esc(w.word) + '</div><div class="meta">' + esc(levelLabel(w)) + "</div></div>" + scoreButtons(w.id, s) + "</li>";
+    }).join("") + "</ul>";
+    if (!complete && !S.readOnly) {
+      html += '<div class="btnrow"><button class="btn small" data-act="more">Add 5 more</button><button class="btn small" data-act="rebuild">Rebuild unscored words</button></div>' +
+        '<p class="hint">Rebuild keeps anything already scored and refills the rest, which helps after new words are added.</p>';
+    }
+    if (!complete) html += sortCallout(newCount);
+    el.innerHTML = streakHTML + html;
+  }
+
+  function renderWords() {
+    const list = $("#wordsList");
+    const ae = document.activeElement;
+    if (ae && list.contains(ae) && ae.tagName === "INPUT") { S.wordsDirty = true; return; }
+    S.wordsDirty = false;
+    const words = wordsArr();
+    const counts = groupCounts(words);
+    $("#wordsSub").textContent = words.length ? words.length + " words in the stack." : "No words yet.";
+    $("#wordChips").innerHTML = ['<button class="chip" data-act="filter" data-f="all" aria-pressed="' + (S.filter === "all") + '">All<b>' + words.length + "</b></button>"]
+      .concat(GROUPS.map((g) => '<button class="chip" data-act="filter" data-f="' + g.key + '" aria-pressed="' + (S.filter === g.key) + '">' + g.label + "<b>" + counts[g.key] + "</b></button>")).join("");
+    $("#wordsCallout").innerHTML = counts.new && !S.readOnly ? '<div class="callout"><p><b>' + counts.new + (counts.new === 1 ? " word hasn’t" : " words haven’t") + "</b> been tried yet. A quick run-through sorts them by how well each one is known.</p>" +
+      '<button class="btn small" data-act="sort">Sort new words</button></div>' : "";
+    const q = S.search.trim().toLowerCase();
+    const g = GROUPS.find((x) => x.key === S.filter);
+    const shown = words.filter((w) => (!g || g.test(w.box || 0)) && (!q || w.word.toLowerCase().includes(q)))
+      .sort((a, b) => a.word.localeCompare(b.word));
+    if (!shown.length) { list.innerHTML = '<li class="meta" style="padding:8px 2px">' + (words.length ? "No words match." : "Words you add will show up here.") + "</li>"; return; }
+    list.innerHTML = shown.map((w) => {
+      const open = S.expanded === w.id;
+      let h = '<li class="wrow" data-id="' + esc(w.id) + '"><button class="wmain" data-act="expand" data-id="' + esc(w.id) + '" aria-expanded="' + open + '">' +
+        '<span class="grow"><span class="w">' + esc(w.word) + '</span><span class="meta" style="display:block">' + esc(levelLabel(w)) + (w.box ? " · " + esc(nextLabel(w)) : "") + "</span></span>" + pips(w.box) + "</button>";
+      if (open) {
+        const hist = w.history || [];
+        const c = { 3: 0, 2: 0, 1: 0 }; hist.forEach((x) => c[x.s]++);
+        const from = w.src === "newsletter" ? "the " + shortDate(w.addedOn) + " newsletter" : "the flashcard pile";
+        const lists = (w.lists || []).filter((d) => !(w.src === "newsletter" && d === w.addedOn));
+        h += '<div class="wdetail"><p>Added from ' + esc(from) + (lists.length ? ". Also on the " + lists.map(shortDate).join(", ") + " newsletter" + (lists.length > 1 ? "s" : "") : "") + ".</p>" +
+          "<p>" + (hist.length ? "Practiced " + hist.length + (hist.length === 1 ? " time: " : " times: ") + c[3] + " easily, " + c[2] + " with effort, " + c[1] + " very difficult." : "Not practiced yet.") + "</p>" +
+          (hist.length ? '<div class="hist" aria-hidden="true">' + hist.slice(-20).map((x) => '<i class="h' + x.s + '"></i>').join("") + "</div>" : "");
+        if (!S.readOnly) {
+          if (S.renaming === w.id) {
+            h += '<form class="inline-edit" data-form="rename" data-id="' + esc(w.id) + '"><label class="sr" for="rn-' + esc(w.id) + '">Correct spelling</label><input id="rn-' + esc(w.id) + '" value="' + esc(w.word) + '" autocapitalize="none" autocomplete="off" spellcheck="false"><button class="btn small primary" type="submit">Save</button><button class="btn small" type="button" data-act="cancelRename">Cancel</button></form>';
+          } else {
+            h += '<div class="btnrow"><button class="btn small" data-act="rename" data-id="' + esc(w.id) + '">Fix spelling</button>' +
+              (w.box ? '<button class="btn small" data-act="reset" data-id="' + esc(w.id) + '">Start over as new</button>' : "") +
+              '<button class="btn small danger" data-act="delete" data-id="' + esc(w.id) + '">' + (S.confirmDelete === w.id ? "Tap again to delete" : "Delete") + "</button></div>";
+          }
+        }
+        h += "</div>";
+      }
+      return h + "</li>";
+    }).join("");
+    if (S.renaming) { const inp = document.getElementById("rn-" + S.renaming); if (inp && document.activeElement !== inp) { inp.focus(); inp.select(); } }
+  }
+
+
+  function renderPreview() {
+    const box = $("#preview"), btn = $("#addBtn");
+    const items = classify(parseInput($("#addText").value), S.words);
+    const fresh = items.filter((i) => i.status === "new").length;
+    const have = items.filter((i) => i.status === "have").length;
+    const rep = items.filter((i) => i.status === "repeat").length;
+    if (!items.length) { box.innerHTML = ""; btn.disabled = true; btn.textContent = "Add words"; return; }
+    const parts = ["<b>" + fresh + " new</b>"];
+    if (have) parts.push("<b>" + have + "</b> already in the stack");
+    if (rep) parts.push("<b>" + rep + "</b> listed twice");
+    box.innerHTML = '<div class="panel"><p class="pvhead">' + parts.join(" · ") + '</p><div class="pv">' + items.map((i) => {
+      if (i.status === "new") return '<span class="tag new">' + esc(i.display) + "<small>new</small></span>";
+      if (i.status === "repeat") return '<span class="tag repeat">' + esc(i.display) + "<small>listed twice</small></span>";
+      const w = i.existing;
+      return '<span class="tag have">' + esc(i.display) + "<small>already have · " + esc(GROUPS.find((g) => g.test(w.box || 0)).label.toLowerCase()) + "</small></span>";
+    }).join("") + "</div></div>";
+    btn.disabled = S.adding || !fresh || S.readOnly;
+    btn.textContent = S.adding ? "Adding…" : fresh ? "Add " + fresh + " new word" + (fresh === 1 ? "" : "s") : "Nothing new to add";
+  }
+  function renderAddResult() {
+    const r = $("#addResult"), a = S.lastAdd;
+    if (!a) { r.textContent = ""; return; }
+    let msg = a.added.length ? "Added " + a.added.length + ": " + a.added.join(", ") + "." : "No new words added.";
+    if (a.dupes.length) msg += " Already in the stack, so skipped: " + a.dupes.join(", ") + ".";
+    if (a.failed) msg += " Some words weren’t saved. They’re still in the box above; try again.";
+    r.textContent = msg;
+  }
+
+  function renderProgress() {
+    const el = $("#progressBody");
+    const words = wordsArr();
+    if (!words.length) { el.innerHTML = '<div class="panel"><p class="meta" style="margin:0;font-size:14px">Progress shows up once words are added and practiced.</p></div>'; renderSettings(); return; }
+    const counts = groupCounts(words);
+    const days = practicedDays(words);
+    const colors = { new: "var(--lv0)", learning: "var(--lv1)", getting: "var(--lv2)", knows: "var(--lv3)", mastered: "var(--lv4)" };
+    let last14 = 0; const cells = [];
+    for (let k = 13; k >= 0; k--) {
+      const d = addDays(S.today, -k); const on = days.has(d); if (on) last14++;
+      cells.push('<div class="day' + (on ? " on" : "") + (k === 0 ? " today" : "") + '"><i></i><span>' + parseDate(d).toLocaleDateString(undefined, { weekday: "narrow" }) + "</span></div>");
+    }
+    const known = counts.knows + counts.mastered;
+    const tricky = words.filter((w) => w.box === 1 || w.box === 2).sort((a, b) => hardCount(b) - hardCount(a) || a.box - b.box || a.word.localeCompare(b.word)).slice(0, 12);
+    const sInfo = streakNow(false);
+    el.innerHTML =
+      '<div class="stats"><div class="stat"><b>' + sInfo.current + '</b><span>day streak now</span></div><div class="stat"><b>' + sInfo.best + '</b><span>best streak</span></div><div class="stat"><b>' + allTimeStars().toLocaleString() + '</b><span>stars earned</span></div></div>' +
+      '<div class="stats"><div class="stat"><b>' + words.length + '</b><span>words in the stack</span></div><div class="stat"><b>' + known + '</b><span>known or mastered</span></div><div class="stat"><b>' + last14 + '</b><span>days practiced, last 2 weeks</span></div></div>' +
+      '<div class="panel"><h3>Where every word stands</h3><div class="levelbar" role="img" aria-label="Words by level">' +
+      GROUPS.map((g) => counts[g.key] ? '<i style="width:' + (100 * counts[g.key] / words.length) + "%;background:" + colors[g.key] + '"></i>' : "").join("") + "</div>" +
+      '<div class="legend">' + GROUPS.map((g) => '<span><i style="background:' + colors[g.key] + '"></i>' + g.label + "<b>" + counts[g.key] + "</b></span>").join("") + "</div></div>" +
+      '<div class="panel"><h3>Practice days</h3><div class="days">' + cells.join("") + "</div></div>" +
+      '<div class="panel"><h3>Trickiest right now</h3>' + (tricky.length ? '<div class="pv">' + tricky.map((w) => '<span class="tag">' + esc(w.word) + "<small>" + (hardCount(w) ? hardCount(w) + "× very difficult" : esc(LEVELS[w.box].every)) + "</small></span>").join("") + "</div>" : '<p class="meta" style="margin:0;font-size:14px">Nothing is stuck at the daily level.</p>') + "</div>";
+    renderSettings();
+  }
+  function renderSettings() {
+    $("#outListSize").textContent = S.settings.listSize;
+    $("#outNewPerDay").textContent = S.settings.newPerDay;
+    const n = $("#childName"); if (document.activeElement !== n) n.value = S.settings.childName || "";
+    $("#soundToggle").setAttribute("aria-pressed", String(SND.enabled()));
+  }
+
+  let lastStars = -1;
+  function renderCardStars() {
+    const el = $("#cmStars"); const v = allTimeStars();
+    el.querySelector("b").textContent = v.toLocaleString();
+    if (lastStars >= 0 && v > lastStars) { el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+    lastStars = v;
+  }
+  function updateCardControls() {
+    const c = S.card; if (!c) return;
+    renderCardStars();
+    if (c.done) return;
+    const id = c.ids[c.i]; const s = cardScoreOf(id);
+    document.querySelectorAll("#cmBody .bigscore button").forEach((b) => b.setAttribute("aria-pressed", String(Number(b.dataset.s) === s)));
+    const n = c.ids.length;
+    if (c.mode === "again") { $("#cmCount").textContent = (c.i + 1) + " of " + n + " · quick re-run"; $("#cmMeter").innerHTML = '<i class="m3" style="width:' + (100 * (c.i + 1) / n) + '%;background:var(--accent)"></i>'; return; }
+    const scored = c.ids.filter((x) => cardScoreOf(x)).length;
+    $("#cmCount").textContent = (c.mode === "sort" ? "Sorting new words · " : "") + scored + " of " + n + " scored";
+    const t = { 3: 0, 2: 0, 1: 0 }; c.ids.forEach((x) => { const v = cardScoreOf(x); if (v) t[v]++; });
+    $("#cmMeter").innerHTML = [3, 2, 1].map((v) => t[v] ? '<i class="m' + v + '" style="width:' + (100 * t[v] / n) + '%"></i>' : "").join("");
+  }
+  function renderCard() {
+    const c = S.card; if (!c) return;
+    const body = $("#cmBody");
+    if (c.done) {
+      c.shown = null;
+      const t = { 3: 0, 2: 0, 1: 0 }; c.ids.forEach((x) => { const v = cardScoreOf(x); if (v) t[v]++; });
+      const again = c.mode === "practice" ? t[1] + t[2] : 0;
+      const round = roundNumber();
+      const title = c.mode === "again" ? "Nice work" : c.mode === "sort" ? "Sorted " + (t[1] + t[2] + t[3]) + " words!" : round > 1 ? "Round " + round + " done!" : "You finished today's list!";
+      const tallyH = c.mode !== "again" ? '<div class="tally">' + [3, 2, 1].map((s) => '<span class="t' + s + '">' + SCORE_NAMES[s] + " " + t[s] + "</span>").join("") + "</div>" : "";
+      const roundBtn = c.mode === "practice" && !S.readOnly ? '<button class="btn primary" data-act="roundGo">Start another round</button>' : "";
+      const buttons = '<div class="btnrow" style="width:100%">' + roundBtn + (again ? '<button class="btn' + (roundBtn ? "" : " primary") + '" data-act="again">Go over the ' + again + " tricky ones again</button>" : "") +
+        '<button class="btn" data-act="closeCard">Close</button></div>';
+      const scoredAny = t[1] + t[2] + t[3] > 0;
+      if (c.mode !== "again" && scoredAny) {
+        body.innerHTML = celebrateHTML(title) + tallyH + buttons + "</div>";
+        if (!c.celebrated) { c.celebrated = true; celebrate(true); }
+      } else {
+        body.innerHTML = '<div class="panel done" style="width:100%;max-width:560px"><p class="big">' + title + "</p>" + tallyH + buttons + "</div>";
+      }
+      updateCardControlsDone(t);
+      return;
+    }
+    const id = c.ids[c.i]; const w = S.words.get(id);
+    if (!w) { advance(); return; }
+    if (c.shown === id && !c.deal) { updateCardControls(); return; }
+    c.shown = id;
+    const controls = c.mode === "again"
+      ? '<div class="cm-nav"><button class="btn" data-act="back"' + (c.i === 0 ? " disabled" : "") + '>Back</button><button class="btn primary" data-act="next">Next</button></div>'
+      : '<div class="bigscore" role="group" aria-label="How was it read?">' + [3, 2, 1].map((v) => '<button type="button" data-act="cardScore" data-s="' + v + '" aria-pressed="false"' + (S.readOnly ? " disabled" : "") + ">" + SCORE_NAMES[v] + "</button>").join("") + "</div>" +
+        '<div class="cm-nav"><button class="btn" data-act="back"' + (c.i === 0 ? " disabled" : "") + '>Back</button><button class="btn" data-act="skip">Skip for now</button></div>';
+    body.innerHTML = '<div class="cardwrap"><div class="icard' + (c.deal ? " deal" : "") + '"><span class="word">' + esc(w.word) + '</span></div><div class="fb" id="cmFb" role="status"></div></div>' +
+      '<p class="cm-level">' + esc(levelLabel(w)) + "</p>" + controls;
+    c.deal = false;
+    fitWord(); updateCardControls();
+  }
+  function updateCardControlsDone(t) {
+    const c = S.card; const n = c.ids.length;
+    renderCardStars();
+    $("#cmCount").textContent = c.mode === "again" ? "Quick re-run finished" : (t[1] + t[2] + t[3]) + " of " + n + " scored";
+    $("#cmMeter").innerHTML = c.mode === "again" ? '<i style="width:100%;background:var(--accent)"></i>' : [3, 2, 1].map((v) => t[v] ? '<i class="m' + v + '" style="width:' + (100 * t[v] / n) + '%"></i>' : "").join("");
+  }
+
+  // ---------- routing ----------
+  function route() {
+    let v = (location.hash || "").slice(1);
+    if (!VIEWS.includes(v)) v = "today";
+    if (v === "add" && S.readOnly) v = "today";
+    S.view = v;
+    VIEWS.forEach((x) => {
+      $("#v-" + x).hidden = x !== v;
+      const t = $("#tab-" + x); if (x === v) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+    });
+  }
+  window.addEventListener("hashchange", () => { route(); window.scrollTo(0, 0); });
+
+  // ---------- events ----------
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest("[data-act]"); if (!t || t.disabled) return;
+    const act = t.dataset.act, id = t.dataset.id;
+    switch (act) {
+      case "score": {
+        const s = Number(t.dataset.s); const cur = scoredToday(S.words.get(id), S.today);
+        if (cur !== s) { SND.play(s); if (s === 3) { const r = t.getBoundingClientRect(); FX.pop(r.left + r.width / 2, r.top + r.height / 2); } scoreWord(id, s); }
+        break;
+      }
+      case "sound": SND.set(!SND.enabled()); renderSettings(); if (SND.enabled()) SND.play(3); break;
+      case "make": makeList(); break;
+      case "more": addMore(); break;
+      case "round": newRound(false); break;
+      case "addClass": addClassLists(); break;
+      case "backup": saveBackup(); break;
+      case "shareBackup": shareBackup(); break;
+      case "restoreYes": if (pendingRestore) { const docsIn = pendingRestore.docs; pendingRestore = null; LocalDB.replaceAll(docsIn); toast("Backup restored."); renderBackup(); } break;
+      case "restoreNo": pendingRestore = null; renderBackup(); break;
+      case "erase": if (confirmErase) { confirmErase = false; LocalDB.replaceAll({}); toast("Everything on this device was erased."); location.hash = "#today"; } else { confirmErase = true; setTimeout(() => { confirmErase = false; renderBackup(); }, 5000); } renderBackup(); break;
+      case "msClose": nextOverlay(); break;
+      case "roundGo": newRound(true); break;
+      case "rebuild": rebuild(); break;
+      case "practice": openCard("practice"); break;
+      case "sort": openCard("sort"); break;
+      case "again": openCard("again"); break;
+      case "closeCard": closeCard(); break;
+      case "cardScore": cardScore(Number(t.dataset.s)); break;
+      case "next": advance(); break;
+      case "skip": { const c = S.card; if (!c) break; if (c.mode === "practice") { const n = c.ids.length; for (let k = 1; k < n; k++) { const j = (c.i + k) % n; if (S.words.has(c.ids[j]) && !cardScoreOf(c.ids[j])) { c.i = j; c.deal = true; renderCard(); return; } } toast("That’s the last unscored word."); } else advance(); break; }
+      case "back": back(); break;
+      case "filter": S.filter = t.dataset.f; renderWords(); break;
+      case "expand": S.expanded = S.expanded === id ? null : id; S.renaming = null; S.confirmDelete = null; renderWords(); break;
+      case "rename": S.renaming = id; renderWords(); break;
+      case "cancelRename": S.renaming = null; forceWords(); break;
+      case "reset": resetWord(id); break;
+      case "delete": if (S.confirmDelete === id) deleteWord(id); else { S.confirmDelete = id; renderWords(); } break;
+      case "add": addWords(); break;
+      case "step": { const k = t.dataset.key; const lim = k === "listSize" ? [6, 30] : [0, 10]; const v = Math.max(lim[0], Math.min(lim[1], (S.settings[k] || DEFAULTS[k]) + Number(t.dataset.d))); if (v !== S.settings[k]) saveSettings({ [k]: v }); break; }
+    }
+  });
+  document.addEventListener("submit", (e) => {
+    const f = e.target.closest("[data-form='rename']"); if (!f) return;
+    e.preventDefault(); renameWord(f.dataset.id, f.querySelector("input").value);
+  });
+  document.addEventListener("focusout", () => { setTimeout(() => { if (S.wordsDirty) renderWords(); }, 0); });
+  document.addEventListener("keydown", (e) => {
+    if (!S.card) return;
+    if (e.key === "Escape") closeCard();
+    else if (e.key === "ArrowLeft") back();
+    else if (e.key === "ArrowRight" && S.card.mode === "again") advance();
+  });
+  $("#addText").addEventListener("input", () => { S.lastAdd = null; renderAddResult(); renderPreview(); });
+  $("#wordSearch").addEventListener("input", (e) => { S.search = e.target.value; renderWords(); });
+  document.addEventListener("change", (e) => {
+    const t = e.target;
+    if (t && t.dataset && t.dataset.list) { if (t.checked) classPicked.add(t.dataset.list); else classPicked.delete(t.dataset.list); $("#classResult").textContent = ""; updateClassBtn(); }
+    else if (t && t.id === "welcomeName") { const v = t.value.trim().slice(0, 40); if (v !== (S.settings.childName || "")) saveSettings({ childName: v }); }
+    else if (t && t.id === "restoreInput") readBackup(t.files && t.files[0]);
+  });
+  $("#childName").addEventListener("change", (e) => { const v = e.target.value.trim().slice(0, 40); if (v !== (S.settings.childName || "")) saveSettings({ childName: v }); });
+  window.addEventListener("resize", () => { if (S.card) fitWord(); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (S.card) fitWord(); });
+
+  // ---------- data ----------
+  let unsubDay = null, dayTimer = null;
+  function subscribeDay() {
+    if (unsubDay) unsubDay();
+    S.dayLoaded = false; S.day = null;
+    unsubDay = S.db.doc("days/" + S.today).onSnapshot((snap) => {
+      S.day = snap.exists ? snap.data() : null; S.dayLoaded = true; scheduleRender();
+    }, () => { S.dayLoaded = true; scheduleRender(); });
+  }
+  function startData() {
+    let confirmed = false;
+    const timer = setTimeout(() => { if (!confirmed) { S.offline = true; renderBanner(); } }, 10000);
+    S.db.collection("words").onSnapshot((snap) => {
+      const m = new Map();
+      snap.docs.forEach((d) => { const data = d.data(); if (data && data.word) m.set(d.id, Object.assign({ id: d.id }, data)); });
+      S.words = m; S.wordsLoaded = true;
+      if (!snap.metadata.fromCache && !confirmed) { confirmed = true; clearTimeout(timer); if (S.offline) { S.offline = false; renderBanner(); } }
+      scheduleRender();
+    }, (err) => { clearTimeout(timer); S.wordsLoaded = true; S.loadError = err; renderBanner(); scheduleRender(); });
+    S.db.collection("bonuses").onSnapshot((snap) => {
+      bonuses.clear(); snap.docs.forEach((d) => { const b = d.data(); if (b) bonuses.set(d.id, b); });
+      scheduleRender();
+    }, () => {});
+    S.db.doc("settings/main").onSnapshot((snap) => {
+      const d = snap.exists ? snap.data() : {};
+      S.settings = Object.assign({}, DEFAULTS, d); renderSettings(); scheduleRender();
+    }, () => {});
+    subscribeDay();
+    setInterval(() => { const t = ymd(new Date()); if (t !== S.today) { S.today = t; subscribeDay(); scheduleRender(); } }, 60000);
+  }
+
+  function init() {
+    route();
+    S.db = LocalDB; startData();
+    renderBanner(); renderAll();
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}
+    if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost")) {
+      window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(() => {}); });
+    }
+  }
+  init();
+})();
+</script>
+</body>
+</html>
